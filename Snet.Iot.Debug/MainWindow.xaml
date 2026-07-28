@@ -1,0 +1,44 @@
+﻿<snet:WindowBase
+    x:Class="Snet.Iot.Debug.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:local="clr-namespace:Snet.Iot.Debug"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:snet="https://shunnet.top"
+    xmlns:ui="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:uis="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="{snet:Loc SystemTitle}"
+    Width="1400"
+    Height="900"
+    snet:ResxLocalizationProvider.DefaultAssembly="Snet.Iot.Debug"
+    snet:ResxLocalizationProvider.DefaultDictionary="Language"
+    Icon="/icon.ico"
+    LoadAnimationEnabled="False"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <Grid x:Name="mainGrid">
+        <uis:NavigationView
+            x:Name="NavigationViewControls"
+            ui:ScrollViewerAssist.CornerRectangleVisibility="Collapsed"
+            FooterMenuItemsSource="{Binding FooterMenuItemsSource}"
+            IsBackButtonVisible="Auto"
+            IsPaneToggleVisible="True"
+            MenuItemsSource="{Binding MenuItemsSource}"
+            OpenPaneLength="260"
+            TextOptions.TextFormattingMode="Display">
+            <i:Interaction.Triggers>
+
+                <i:EventTrigger EventName="Loaded">
+                    <snet:EventCommand Command="{Binding NavigationView_Loaded}" />
+                </i:EventTrigger>
+
+                <i:EventTrigger EventName="SelectionChanged">
+                    <snet:EventCommand Command="{Binding NavigationView_SelectionChanged}" />
+                </i:EventTrigger>
+
+            </i:Interaction.Triggers>
+        </uis:NavigationView>
+    </Grid>
+</snet:WindowBase>

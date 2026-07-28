@@ -1,0 +1,800 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+		Microsoft ResX Schema
+
+		Version 1.3
+
+		The primary goals of this format is to allow a simple XML format 
+		that is mostly human readable. The generation and parsing of the 
+		various data types are done through the TypeConverter classes 
+		associated with the data types.
+
+		Example:
+
+		... ado.net/XML headers & schema ...
+		<resheader name="resmimetype">text/microsoft-resx</resheader>
+		<resheader name="version">1.3</resheader>
+		<resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+		<resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+		<data name="Name1">this is my long string</data>
+		<data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+		<data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+			[base64 mime encoded serialized .NET Framework object]
+		</data>
+		<data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+			[base64 mime encoded string representing a byte array form of the .NET Framework object]
+		</data>
+
+		There are any number of "resheader" rows that contain simple 
+		name/value pairs.
+
+		Each data row contains a name, and value. The row also contains a 
+		type or mimetype. Type corresponds to a .NET class that support 
+		text/value conversion through the TypeConverter architecture. 
+		Classes that don't support this are serialized and stored with the 
+		mimetype set.
+
+		The mimetype is used for serialized objects, and tells the 
+		ResXResourceReader how to depersist the object. This is currently not 
+		extensible. For a given mimetype the value must be set accordingly:
+
+		Note - application/x-microsoft.net.object.binary.base64 is the format 
+		that the ResXResourceWriter will generate, however the reader can 
+		read any of the formats listed below.
+
+		mimetype: application/x-microsoft.net.object.binary.base64
+		value   : The object must be serialized with 
+			: System.Serialization.Formatters.Binary.BinaryFormatter
+			: and then encoded with base64 encoding.
+
+		mimetype: application/x-microsoft.net.object.soap.base64
+		value   : The object must be serialized with 
+			: System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+			: and then encoded with base64 encoding.
+
+		mimetype: application/x-microsoft.net.object.bytearray.base64
+		value   : The object must be serialized into a byte array 
+			: using a System.ComponentModel.TypeConverter
+			: and then encoded with base64 encoding.
+	-->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>1.3</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SystemTitle" xml:space="preserve">
+    <value>[ Shunnet.top ] Iot 调试工具</value>
+    <comment>[ Shunnet.top ] Iot 调试工具</comment>
+  </data>
+  <data name="关于" xml:space="preserve">
+    <value>关于</value>
+  </data>
+  <data name="搜索" xml:space="preserve">
+    <value> 搜索</value>
+  </data>
+  <data name="工具" xml:space="preserve">
+    <value>工具</value>
+  </data>
+  <data name="通信" xml:space="preserve">
+    <value>通信</value>
+  </data>
+  <data name="罗克韦尔" xml:space="preserve">
+    <value>[ 罗克韦尔 ]</value>
+  </data>
+  <data name="基础数据" xml:space="preserve">
+    <value>基础数据</value>
+  </data>
+  <data name="功能" xml:space="preserve">
+    <value>功能</value>
+  </data>
+  <data name="导入" xml:space="preserve">
+    <value>导入</value>
+  </data>
+  <data name="导出" xml:space="preserve">
+    <value>导出</value>
+  </data>
+  <data name="打开" xml:space="preserve">
+    <value>打开</value>
+  </data>
+  <data name="关闭" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="获取对应类型参数" xml:space="preserve">
+    <value>获取对应类型参数</value>
+  </data>
+  <data name="数据类型" xml:space="preserve">
+    <value>数据类型</value>
+  </data>
+  <data name="全局异常捕获" xml:space="preserve">
+    <value>全局异常捕获</value>
+  </data>
+  <data name="地址" xml:space="preserve">
+    <value>地址</value>
+  </data>
+  <data name="长度" xml:space="preserve">
+    <value>长度</value>
+  </data>
+  <data name="读取" xml:space="preserve">
+    <value>读取</value>
+  </data>
+  <data name="订阅" xml:space="preserve">
+    <value>订阅</value>
+  </data>
+  <data name="数据" xml:space="preserve">
+    <value>数据</value>
+  </data>
+  <data name="写入" xml:space="preserve">
+    <value>写入</value>
+  </data>
+  <data name="取消订阅" xml:space="preserve">
+    <value>取消订阅</value>
+  </data>
+  <data name="数据事件" xml:space="preserve">
+    <value>数据事件</value>
+  </data>
+  <data name="信息事件" xml:space="preserve">
+    <value>信息事件</value>
+  </data>
+  <data name="清空" xml:space="preserve">
+    <value>清空</value>
+  </data>
+  <data name="编码类型" xml:space="preserve">
+    <value>编码类型</value>
+  </data>
+  <data name="导入失败" xml:space="preserve">
+    <value>导入失败</value>
+  </data>
+  <data name="导入成功" xml:space="preserve">
+    <value>导入成功</value>
+  </data>
+  <data name="请选择文件夹" xml:space="preserve">
+    <value>请选择文件夹</value>
+  </data>
+  <data name="请选择文件" xml:space="preserve">
+    <value>请选择文件</value>
+  </data>
+  <data name="RabbitMQ" xml:space="preserve">
+    <value>[ RabbitMQ ]</value>
+  </data>
+  <data name="发布" xml:space="preserve">
+    <value>发布</value>
+  </data>
+  <data name="主题" xml:space="preserve">
+    <value>主题</value>
+  </data>
+  <data name="内容" xml:space="preserve">
+    <value>内容</value>
+  </data>
+  <data name="UdpClient" xml:space="preserve">
+    <value>[ Udp客户端 ]</value>
+  </data>
+  <data name="信息" xml:space="preserve">
+    <value>信息</value>
+  </data>
+  <data name="发送" xml:space="preserve">
+    <value>发送</value>
+  </data>
+  <data name="TcpClient" xml:space="preserve">
+    <value>[ Tcp客户端 ]</value>
+  </data>
+  <data name="端口" xml:space="preserve">
+    <value>端口</value>
+  </data>
+  <data name="不是有效的 Hex 数据" xml:space="preserve">
+    <value>不是有效的 Hex 数据</value>
+  </data>
+  <data name="群发" xml:space="preserve">
+    <value>群发</value>
+  </data>
+  <data name="TcpService" xml:space="preserve">
+    <value>[ Tcp服务端 ]</value>
+  </data>
+  <data name="客户端列表" xml:space="preserve">
+    <value>客户端列表</value>
+  </data>
+  <data name="请选择一个已连接的客户端" xml:space="preserve">
+    <value>请选择一个已连接的客户端</value>
+  </data>
+  <data name="WsClient" xml:space="preserve">
+    <value>[ Ws客户端 ]</value>
+  </data>
+  <data name="WsService" xml:space="preserve">
+    <value>[ Ws服务端 ]</value>
+  </data>
+  <data name="Serial" xml:space="preserve">
+    <value>[ 串口 ]</value>
+  </data>
+  <data name="MqttService" xml:space="preserve">
+    <value>[ Mqtt服务端 ]</value>
+  </data>
+  <data name="MqttWsService" xml:space="preserve">
+    <value>[ MqttWs服务端 ]</value>
+  </data>
+  <data name="NettyService" xml:space="preserve">
+    <value>[ Netty服务端 ]</value>
+  </data>
+  <data name="Tcp" xml:space="preserve">
+    <value>[ Tcp ]</value>
+  </data>
+  <data name="客户端" xml:space="preserve">
+    <value>客户端</value>
+  </data>
+  <data name="服务端" xml:space="preserve">
+    <value>[ 服务端 ]</value>
+  </data>
+  <data name="Ws" xml:space="preserve">
+    <value>[ Ws ]</value>
+  </data>
+  <data name="菜单" xml:space="preserve">
+    <value>菜单</value>
+  </data>
+  <data name="MqttClient" xml:space="preserve">
+    <value>[ Mqtt客户端 ]</value>
+  </data>
+  <data name="Ws服务端" xml:space="preserve">
+    <value>[ Ws服务端 ]</value>
+  </data>
+  <data name="Mqtt" xml:space="preserve">
+    <value>[ Mqtt ]</value>
+  </data>
+  <data name="Netty" xml:space="preserve">
+    <value>[ Netty ]</value>
+  </data>
+  <data name="NettyClient" xml:space="preserve">
+    <value>[ Netty客户端 ]</value>
+  </data>
+  <data name="Kafka" xml:space="preserve">
+    <value>[ Kafka ]</value>
+  </data>
+  <data name="NetMQ" xml:space="preserve">
+    <value>[ NetMQ ]</value>
+  </data>
+  <data name="倍福" xml:space="preserve">
+    <value>[ 倍福 ]</value>
+  </data>
+  <data name="西蒙" xml:space="preserve">
+    <value>[ 西蒙 ]</value>
+  </data>
+  <data name="台达" xml:space="preserve">
+    <value>[ 台达 ]</value>
+  </data>
+  <data name="永宏" xml:space="preserve">
+    <value>[ 永宏 ]</value>
+  </data>
+  <data name="富士" xml:space="preserve">
+    <value>[ 富士 ]</value>
+  </data>
+  <data name="通用电气" xml:space="preserve">
+    <value>[ 通用电气 ]</value>
+  </data>
+  <data name="汇川" xml:space="preserve">
+    <value>[ 汇川 ]</value>
+  </data>
+  <data name="英威腾" xml:space="preserve">
+    <value>[ 英威腾 ]</value>
+  </data>
+  <data name="基恩士" xml:space="preserve">
+    <value>[ 基恩士 ]</value>
+  </data>
+  <data name="LSis" xml:space="preserve">
+    <value>[ LSis ]</value>
+  </data>
+  <data name="麦格米特" xml:space="preserve">
+    <value>[ 麦格米特 ]</value>
+  </data>
+  <data name="三菱" xml:space="preserve">
+    <value>[ 三菱 ]</value>
+  </data>
+  <data name="Modbus" xml:space="preserve">
+    <value>[ Modbus ]</value>
+  </data>
+  <data name="欧姆龙" xml:space="preserve">
+    <value>[ 欧姆龙 ]</value>
+  </data>
+  <data name="松下" xml:space="preserve">
+    <value>[ 松下 ]</value>
+  </data>
+  <data name="电力通讯规约" xml:space="preserve">
+    <value>[ 电力通讯规约 ]</value>
+  </data>
+  <data name="西门子" xml:space="preserve">
+    <value>[ 西门子 ]</value>
+  </data>
+  <data name="丰田" xml:space="preserve">
+    <value>[ 丰田 ]</value>
+  </data>
+  <data name="丰炜" xml:space="preserve">
+    <value>[ 丰炜 ]</value>
+  </data>
+  <data name="维控" xml:space="preserve">
+    <value>[ 维控 ]</value>
+  </data>
+  <data name="信捷" xml:space="preserve">
+    <value>[ 信捷 ]</value>
+  </data>
+  <data name="山武" xml:space="preserve">
+    <value>[ 山武 ]</value>
+  </data>
+  <data name="安川" xml:space="preserve">
+    <value>[ 安川 ]</value>
+  </data>
+  <data name="横河" xml:space="preserve">
+    <value>[ 横河 ]</value>
+  </data>
+  <data name="DB" xml:space="preserve">
+    <value>[ 数据库 ]</value>
+  </data>
+  <data name="TEP" xml:space="preserve">
+    <value>[ TCP扩展插件 ]</value>
+  </data>
+  <data name="地址类型" xml:space="preserve">
+    <value>地址类型</value>
+  </data>
+  <data name="静态地址" xml:space="preserve">
+    <value>静态地址</value>
+  </data>
+  <data name="动态随机变化地址" xml:space="preserve">
+    <value>动态随机变化地址</value>
+  </data>
+  <data name="动态随机范围变化地址" xml:space="preserve">
+    <value>动态随机范围变化地址</value>
+  </data>
+  <data name="动态顺序变化地址" xml:space="preserve">
+    <value>动态顺序变化地址</value>
+  </data>
+  <data name="动态顺序范围变化地址" xml:space="preserve">
+    <value>动态顺序范围变化地址</value>
+  </data>
+  <data name="Sim" xml:space="preserve">
+    <value>[ 采集模拟 ]</value>
+  </data>
+  <data name="Ua客户端" xml:space="preserve">
+    <value>[ Ua客户端 ]</value>
+  </data>
+  <data name="Da客户端" xml:space="preserve">
+    <value>[ Da客户端 ]</value>
+  </data>
+  <data name="Ua服务端" xml:space="preserve">
+    <value>[ Ua服务端 ]</value>
+  </data>
+  <data name="OpcUa" xml:space="preserve">
+    <value>[ OpcUa ]</value>
+  </data>
+  <data name="节点信息浏览" xml:space="preserve">
+    <value>OpcUa 节点信息浏览</value>
+  </data>
+  <data name="节点" xml:space="preserve">
+    <value>节点</value>
+  </data>
+  <data name="导出节点" xml:space="preserve">
+    <value>导出节点</value>
+  </data>
+  <data name="详情" xml:space="preserve">
+    <value>详情</value>
+  </data>
+  <data name="名称" xml:space="preserve">
+    <value>名称</value>
+  </data>
+  <data name="值" xml:space="preserve">
+    <value>值</value>
+  </data>
+  <data name="类型" xml:space="preserve">
+    <value>类型</value>
+  </data>
+  <data name="访问级别" xml:space="preserve">
+    <value>访问级别</value>
+  </data>
+  <data name="描述" xml:space="preserve">
+    <value>描述</value>
+  </data>
+  <data name="请先打开连接" xml:space="preserve">
+    <value>请先打开连接</value>
+  </data>
+  <data name="请选中节点后操作" xml:space="preserve">
+    <value>请选中节点后操作</value>
+  </data>
+  <data name="取消节点导出，未选择存储路径" xml:space="preserve">
+    <value>取消节点导出，未选择存储路径</value>
+  </data>
+  <data name="请把所有子节点都展开在进行导出操作" xml:space="preserve">
+    <value>请把所有子节点都展开在进行导出操作</value>
+  </data>
+  <data name="节点成功导出至" xml:space="preserve">
+    <value>节点成功导出至</value>
+  </data>
+  <data name="节点加载失败" xml:space="preserve">
+    <value>节点加载失败</value>
+  </data>
+  <data name="父级" xml:space="preserve">
+    <value>父级</value>
+  </data>
+  <data name="父级名称" xml:space="preserve">
+    <value>父级名称</value>
+  </data>
+  <data name="创建父级" xml:space="preserve">
+    <value>创建父级</value>
+  </data>
+  <data name="移除父级" xml:space="preserve">
+    <value>移除父级</value>
+  </data>
+  <data name="节点地址" xml:space="preserve">
+    <value>节点地址</value>
+  </data>
+  <data name="创建" xml:space="preserve">
+    <value>创建</value>
+  </data>
+  <data name="移除" xml:space="preserve">
+    <value>移除</value>
+  </data>
+  <data name="写入数据" xml:space="preserve">
+    <value>写入数据</value>
+  </data>
+  <data name="导入节点" xml:space="preserve">
+    <value>导入节点</value>
+  </data>
+  <data name="获取集合" xml:space="preserve">
+    <value>获取集合</value>
+  </data>
+  <data name="地址操作" xml:space="preserve">
+    <value>地址操作</value>
+  </data>
+  <data name="父级名称不能为空" xml:space="preserve">
+    <value>父级名称不能为空</value>
+  </data>
+  <data name="父级创建成功" xml:space="preserve">
+    <value>父级创建成功</value>
+  </data>
+  <data name="父级创建失败" xml:space="preserve">
+    <value>父级创建失败</value>
+  </data>
+  <data name="不允许移除" xml:space="preserve">
+    <value>不允许移除</value>
+  </data>
+  <data name="父级移除成功" xml:space="preserve">
+    <value>父级移除成功</value>
+  </data>
+  <data name="父级移除失败" xml:space="preserve">
+    <value>父级移除失败</value>
+  </data>
+  <data name="数据格式不正确" xml:space="preserve">
+    <value>数据格式不正确</value>
+  </data>
+  <data name="默认值不能为空" xml:space="preserve">
+    <value>默认值不能为空</value>
+  </data>
+  <data name="提示" xml:space="preserve">
+    <value>提示</value>
+  </data>
+  <data name="转换失败" xml:space="preserve">
+    <value>转换失败</value>
+  </data>
+  <data name="数据不能为空" xml:space="preserve">
+    <value>数据不能为空</value>
+  </data>
+  <data name="转换" xml:space="preserve">
+    <value>转换</value>
+  </data>
+  <data name="复制" xml:space="preserve">
+    <value>复制</value>
+  </data>
+  <data name="注释" xml:space="preserve">
+    <value>注释</value>
+  </data>
+  <data name="颜色" xml:space="preserve">
+    <value>颜色</value>
+  </data>
+  <data name="参数" xml:space="preserve">
+    <value>参数</value>
+  </data>
+  <data name="Svg代码" xml:space="preserve">
+    <value>Svg代码</value>
+  </data>
+  <data name="转换结果" xml:space="preserve">
+    <value>转换结果</value>
+  </data>
+  <data name="Svg" xml:space="preserve">
+    <value>[ Svg ]</value>
+  </data>
+  <data name="Svg转换工具" xml:space="preserve">
+    <value>Svg转换工具</value>
+  </data>
+  <data name="转换成功" xml:space="preserve">
+    <value>转换成功</value>
+  </data>
+  <data name="路径不能为空" xml:space="preserve">
+    <value>路径不能为空</value>
+  </data>
+  <data name="Gif" xml:space="preserve">
+    <value>[ Gif ]</value>
+  </data>
+  <data name="视频转Gif" xml:space="preserve">
+    <value>视频转Gif</value>
+  </data>
+  <data name="文件路径" xml:space="preserve">
+    <value>文件路径</value>
+  </data>
+  <data name="存储路径" xml:space="preserve">
+    <value>存储路径</value>
+  </data>
+  <data name="选择文件路径" xml:space="preserve">
+    <value>选择文件路径</value>
+  </data>
+  <data name="选择存储路径" xml:space="preserve">
+    <value>选择存储路径</value>
+  </data>
+  <data name="节点信息浏览[隐藏/显示]" xml:space="preserve">
+    <value>节点信息浏览[隐藏/显示]</value>
+  </data>
+  <data name="DaHttp" xml:space="preserve">
+    <value>[ DaHttp ]</value>
+  </data>
+  <data name="Yolo" xml:space="preserve">
+    <value>[ Yolo ]</value>
+  </data>
+  <data name="YoloDetect" xml:space="preserve">
+    <value>[ Yolo 检测 ]</value>
+  </data>
+  <data name="模型路径" xml:space="preserve">
+    <value>模型路径</value>
+  </data>
+  <data name="选择" xml:space="preserve">
+    <value>选择</value>
+  </data>
+  <data name="原始图片路径" xml:space="preserve">
+    <value>原始图片路径</value>
+  </data>
+  <data name="置信度阈值" xml:space="preserve">
+    <value>置信度阈值</value>
+  </data>
+  <data name="交并比阈值" xml:space="preserve">
+    <value>交并比阈值</value>
+  </data>
+  <data name="验证所有" xml:space="preserve">
+    <value>验证所有</value>
+  </data>
+  <data name="验证选中" xml:space="preserve">
+    <value>验证选中</value>
+  </data>
+  <data name="连续验证" xml:space="preserve">
+    <value>连续验证</value>
+  </data>
+  <data name="停止验证" xml:space="preserve">
+    <value>停止验证</value>
+  </data>
+  <data name="原始图片" xml:space="preserve">
+    <value>原始图片</value>
+  </data>
+  <data name="消息" xml:space="preserve">
+    <value>消息</value>
+  </data>
+  <data name="验证结果" xml:space="preserve">
+    <value>验证结果</value>
+  </data>
+  <data name="验证已停止" xml:space="preserve">
+    <value>验证已停止</value>
+  </data>
+  <data name="请选择模型路径" xml:space="preserve">
+    <value>请选择模型路径</value>
+  </data>
+  <data name="请选择需要验证图片的文件夹" xml:space="preserve">
+    <value>请选择需要验证图片的文件夹</value>
+  </data>
+  <data name="读取失败" xml:space="preserve">
+    <value>读取失败</value>
+  </data>
+  <data name="已加载" xml:space="preserve">
+    <value>已加载</value>
+  </data>
+  <data name="张原图" xml:space="preserve">
+    <value>张原图</value>
+  </data>
+  <data name="未检索到图片" xml:space="preserve">
+    <value>未检索到图片</value>
+  </data>
+  <data name="验证" xml:space="preserve">
+    <value>验证</value>
+  </data>
+  <data name="大小" xml:space="preserve">
+    <value>大小</value>
+  </data>
+  <data name="用时" xml:space="preserve">
+    <value>用时</value>
+  </data>
+  <data name="目标" xml:space="preserve">
+    <value>目标</value>
+  </data>
+  <data name="个" xml:space="preserve">
+    <value>个</value>
+  </data>
+  <data name="标签" xml:space="preserve">
+    <value>标签</value>
+  </data>
+  <data name="准度" xml:space="preserve">
+    <value>准度</value>
+  </data>
+  <data name="坐标" xml:space="preserve">
+    <value>坐标</value>
+  </data>
+  <data name="验证图片异常" xml:space="preserve">
+    <value>验证图片异常</value>
+  </data>
+  <data name="向下验证" xml:space="preserve">
+    <value>向下验证</value>
+  </data>
+  <data name="向上验证" xml:space="preserve">
+    <value>向上验证</value>
+  </data>
+  <data name="YoloPose" xml:space="preserve">
+    <value>[ Yolo 姿态 ]</value>
+  </data>
+  <data name="复制结果" xml:space="preserve">
+    <value>复制结果</value>
+  </data>
+  <data name="YoloSegment" xml:space="preserve">
+    <value>[ Yolo 分割 ]</value>
+  </data>
+  <data name="像素置信度阈值" xml:space="preserve">
+    <value>像素置信度阈值</value>
+  </data>
+  <data name="正在加载节点中，是否取消加载?" xml:space="preserve">
+    <value>正在加载节点中，是否取消加载?</value>
+  </data>
+  <data name="节点已取消加载" xml:space="preserve">
+    <value>节点已取消加载</value>
+  </data>
+  <data name="YoloClassify" xml:space="preserve">
+    <value>[ Yolo 分类 ]</value>
+  </data>
+  <data name="YoloOBB" xml:space="preserve">
+    <value>[ Yolo 定向检测 ]</value>
+  </data>
+  <data name="分类数量" xml:space="preserve">
+    <value>分类数量</value>
+  </data>
+  <data name="交互" xml:space="preserve">
+    <value>交互</value>
+  </data>
+  <data name="对应硬件的JSON字符串" xml:space="preserve">
+    <value>对应硬件的JSON字符串</value>
+  </data>
+  <data name="开始统计" xml:space="preserve">
+    <value>开始统计</value>
+  </data>
+  <data name="结束统计" xml:space="preserve">
+    <value>结束统计</value>
+  </data>
+  <data name="图尔克" xml:space="preserve">
+    <value>[ 图尔克 ]</value>
+  </data>
+  <data name="发那科" xml:space="preserve">
+    <value>[ 发那科 ]</value>
+  </data>
+  <data name="自由协议" xml:space="preserve">
+    <value>[ 自由协议 ]</value>
+  </data>
+  <data name="理化" xml:space="preserve">
+    <value>[ 理化 ]</value>
+  </data>
+  <data name="性能测试" xml:space="preserve">
+    <value>[ 性能测试 ]</value>
+  </data>
+  <data name="FFmpeg 工具路径" xml:space="preserve">
+    <value>FFmpeg 工具路径，下载地址：https://github.com/BtbN/FFmpeg-Builds/releases</value>
+  </data>
+  <data name="已启动" xml:space="preserve">
+    <value>已启动</value>
+  </data>
+  <data name="未启动" xml:space="preserve">
+    <value>未启动</value>
+  </data>
+  <data name="科伺" xml:space="preserve">
+    <value>[ 科伺 ]</value>
+  </data>
+  <data name="东方马达" xml:space="preserve">
+    <value>[ 东方马达 ]</value>
+  </data>
+  <data name="宇电" xml:space="preserve">
+    <value>[ 宇电 ]</value>
+  </data>
+  <data name="串口" xml:space="preserve">
+    <value>串口</value>
+  </data>
+  <data name="全部关闭" xml:space="preserve">
+    <value>全部关闭</value>
+  </data>
+  <data name="查阅" xml:space="preserve">
+    <value>查阅</value>
+  </data>
+  <data name="OpcDa" xml:space="preserve">
+    <value>[ OpcDa ]</value>
+  </data>
+  <data name="OpcDaHttp" xml:space="preserve">
+    <value>[ OpcDaHttp ]</value>
+  </data>
+  <data name="图表" xml:space="preserve">
+    <value>图表</value>
+  </data>
+  <data name="移除数据" xml:space="preserve">
+    <value>移除数据</value>
+  </data>
+  <data name="Daq" xml:space="preserve">
+    <value>采集</value>
+  </data>
+  <data name="Mq" xml:space="preserve">
+    <value>传输</value>
+  </data>
+  <data name="发送等待" xml:space="preserve">
+    <value>发送等待</value>
+  </data>
+  <data name="UdpBroadcast" xml:space="preserve">
+    <value>[ Udp广播 ]</value>
+  </data>
+  <data name="UdpMulticast" xml:space="preserve">
+    <value>[ Udp组播 ]</value>
+  </data>
+  <data name="DaqService" xml:space="preserve">
+    <value>采集服务端</value>
+  </data>
+  <data name="MqService" xml:space="preserve">
+    <value>传输服务端</value>
+  </data>
+  <data name="通信服务端" xml:space="preserve">
+    <value>通信服务端</value>
+  </data>
+  <data name="OpcUaService" xml:space="preserve">
+    <value>[ OpcUa服务端 ]</value>
+  </data>
+  <data name="UdpService" xml:space="preserve">
+    <value>[ Udp服务端 ]</value>
+  </data>
+  <data name="关闭其他" xml:space="preserve">
+    <value>关闭其他</value>
+  </data>
+  <data name="OpcUaServiceToolTitle" xml:space="preserve">
+    <value>[ OpcUa服务端 ]</value>
+  </data>
+  <data name="OpcUaNodeBrowsing" xml:space="preserve">
+    <value>[ OpcUa 节点浏览 ]</value>
+  </data>
+  <data name="已取消" xml:space="preserve">
+    <value>已取消</value>
+  </data>
+  <data name="连接已经打开，如需更换请先关闭此连接" xml:space="preserve">
+    <value>连接已经打开，如需更换请先关闭此连接</value>
+  </data>
+</root>
