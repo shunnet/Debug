@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/.NET-10.0-blue?logo=dotnet"/>
   <img src="https://img.shields.io/badge/platform-Windows-success?logo=windows"/>
   <img src="https://img.shields.io/badge/license-MIT-green"/>
-  <img src="https://img.shields.io/badge/version-2.0.0.1-blue"/>
+  <img src="https://img.shields.io/github/stars/shunnet/Debug?style=social"/>
 </p>
 
 <p align="center">
