@@ -167,6 +167,9 @@
 <p align="center">
   <img src="images/7.png" width="900"/>
 </p>
+<p align="center">
+  <img src="images/8.png" width="900"/>
+</p>
 
 ## 📦 安装与使用
 
