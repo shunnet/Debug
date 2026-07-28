@@ -79,49 +79,7 @@
 
 ## 🚀 核心特性
 
-### 🔌 DAQ 协议调试（40+ 协议）
-
-支持的工业协议驱动：
-
-| 协议/品牌 | 驱动类 |
-|-----------|--------|
-| OPC UA / OPC DA / OPC DA HTTP | `OpcUaClientOperate` / `OpcDaClientOperate` / `OpcDaHttpOperate` |
-| Siemens 西门子 | `SiemensOperate` |
-| Mitsubishi 三菱 | `MitsubishiOperate` |
-| Omron 欧姆龙 | `OmronOperate` |
-| Allen-Bradley 罗克韦尔 | `AllenBradleyOperate` |
-| Beckhoff 倍福 | `BeckhoffOperate` |
-| Modbus | `ModbusOperate` |
-| Inovance 汇川 | `InovanceOperate` |
-| Keyence 基恩士 | `KeyenceOperate` |
-| Panasonic 松下 | `PanasonicOperate` |
-| Delta 台达 | `DeltaOperate` |
-| Fatek 永宏 | `FatekOperate` |
-| Fuji 富士 | `FujiOperate` |
-| GE 通用电气 | `GEOperate` |
-| Invt 英威腾 | `InvtOperate` |
-| LSis | `LSisOperate` |
-| MegMeet 麦格米特 | `MegMeetOperate` |
-| Toyota 丰田 | `ToyotaOperate` |
-| Vigor 丰炜 | `VigorOperate` |
-| WeCon 维控 | `WeConOperate` |
-| XinJE 信捷 | `XinJEOperate` |
-| Yamatake 山武 | `YamatakeOperate` |
-| Yaskawa 安川 | `YaskawaOperate` |
-| Yokogawa 横河 | `YokogawaOperate` |
-| Turck 图尔克 | `TurckOperate` |
-| RKC 理化 | `RKCOperate` |
-| Kossi 科伺 | `KossiOperate` |
-| OrientalMotor 东方马达 | `OrientalMotorOperate` |
-| YuDian 宇电 | `YuDianOperate` |
-| Fanuc 发那科 | `FanucOperate` |
-| Cimon 西蒙 | `CimonOperate` |
-| Freedom 自由协议 | `FreedomOperate` |
-| Sim 模拟 | `SimOperate` |
-| DB 数据库 | `DBOperate` |
-| TEP 电力通讯规约 | `TepMasterOperate` |
-| PQDIF 电力质量 | `PQDIFOperate` |
-| 性能测试 | `PerformanceTestingOperate` |
+### 🔌 DAQ 协议调试
 
 **调试功能**：
 - ✅ 地址读写（支持 Byte/String/Double/Float/Bool/Int/Short/Long 等 20+ 数据类型）
