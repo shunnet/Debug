@@ -1,4 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using Snet.Core.communication.net.core;
+using Snet.Core.communication.net.@enum;
 using Snet.Core.communication.net.tcp.service;
 using Snet.Core.communication.net.udp.unicast.service;
 using Snet.Core.communication.net.ws.service;
@@ -313,153 +315,54 @@ namespace Snet.Iot.Debug.viewModel
         private async Task Communication_OnDataEventAsync(object? sender, EventDataResult e)
         {
             await uiMessage_DataEvent.ShowAsync(e.Message.Replace("[", "[ ").Replace("]", " ] "));
-            if (tag == "TcpService")
+
+            ClientMessage? message = e.GetSource<ClientMessage>();
+            if (message == null)
             {
-                Snet.Core.communication.net.tcp.service.TcpServiceData.ClientMessage? message = e.GetSource<Snet.Core.communication.net.tcp.service.TcpServiceData.ClientMessage>();
-                if (message == null)
-                {
-                    return;
-                }
-                string[] ipport;
-                switch (message.Step)
-                {
-                    case Snet.Core.communication.net.tcp.service.TcpServiceData.Steps.客户端连接:
-                        ipport = message.IpPort.Split(':');
-                        if (Application.Current == null)
-                            return;
-                        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                return;
+            }
+            string[] ipport;
+            switch (message.Step)
+            {
+                case Steps.客户端连接:
+                    ipport = message.IpPort.Split(':');
+                    if (Application.Current == null)
+                        return;
+                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        DataGridItemsSource.Add(new DataGridStructuralBody() { IpAddress = ipport[0], Port = ipport[1].ToInt(), IPENDPORT = message.IpPort });
+                    });
+                    break;
+                case Steps.客户端断开:
+                    if (Application.Current == null)
+                        return;
+                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        for (int i = 0; i < DataGridItemsSource.Count; i++)
                         {
-                            DataGridItemsSource.Add(new DataGridStructuralBody() { IpAddress = ipport[0], Port = ipport[1].ToInt(), IPENDPORT = message.IpPort });
-                        });
-                        break;
-                    case Snet.Core.communication.net.tcp.service.TcpServiceData.Steps.客户端断开:
-                        if (Application.Current == null)
-                            return;
-                        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-                        {
-                            for (int i = 0; i < DataGridItemsSource.Count; i++)
+                            if (DataGridItemsSource[i].IPENDPORT.Equals(message.IpPort))
                             {
-                                if (DataGridItemsSource[i].IPENDPORT.Equals(message.IpPort))
-                                {
-                                    DataGridItemsSource.RemoveAt(i);
-                                    continue;
-                                }
-                            }
-                        });
-                        break;
-                    case Snet.Core.communication.net.tcp.service.TcpServiceData.Steps.消息接收:
-                        if (message.Bytes != null)
-                        {
-                            if (DataFormat == 0)
-                            {
-                                await uiMessage_DataEvent.ShowAsync($"[ {message.IpPort} ] -> {Encoding.ASCII.GetString(message.Bytes)}");
-                            }
-                            else
-                            {
-                                await uiMessage_DataEvent.ShowAsync($"[ {message.IpPort} ] -> {message.Bytes.ToHexString()}");
+                                DataGridItemsSource.RemoveAt(i);
+                                continue;
                             }
                         }
-                        break;
-                }
-            }
-            else if (tag == "WsService")
-            {
-                Snet.Core.communication.net.ws.service.WsServiceData.ClientMessage? message = e.GetSource<Snet.Core.communication.net.ws.service.WsServiceData.ClientMessage>();
-                if (message == null)
-                {
-                    return;
-                }
-                string[] ipport;
-                switch (message.Step)
-                {
-                    case Snet.Core.communication.net.ws.service.WsServiceData.Steps.客户端连接:
-                        ipport = message.IpPort.Split(':');
-                        if (Application.Current == null)
-                            return;
-                        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                    });
+                    break;
+                case Steps.消息接收:
+                    if (message.Bytes != null)
+                    {
+                        if (DataFormat == 0)
                         {
-                            DataGridItemsSource.Add(new DataGridStructuralBody() { IpAddress = ipport[0], Port = ipport[1].ToInt(), IPENDPORT = message.IpPort });
-                        });
-                        break;
-                    case Snet.Core.communication.net.ws.service.WsServiceData.Steps.客户端断开:
-                        if (Application.Current == null)
-                            return;
-                        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-                        {
-                            for (int i = 0; i < DataGridItemsSource.Count; i++)
-                            {
-                                if (DataGridItemsSource[i].IPENDPORT.Equals(message.IpPort))
-                                {
-                                    DataGridItemsSource.RemoveAt(i);
-                                    continue;
-                                }
-                            }
-                        });
-                        break;
-                    case Snet.Core.communication.net.ws.service.WsServiceData.Steps.消息接收:
-                        if (message.Bytes != null)
-                        {
-                            if (DataFormat == 0)
-                            {
-                                await uiMessage_DataEvent.ShowAsync($"[ {message.IpPort} ] -> {Encoding.ASCII.GetString(message.Bytes)}");
-                            }
-                            else
-                            {
-                                await uiMessage_DataEvent.ShowAsync($"[ {message.IpPort} ] -> {message.Bytes.ToHexString()}");
-                            }
+                            await uiMessage_DataEvent.ShowAsync($"[ {message.IpPort} ] -> {Encoding.ASCII.GetString(message.Bytes)}");
                         }
-                        break;
-                }
-            }
-            else if (tag == "UdpService")
-            {
-                UdpServiceData.ClientMessage? message = e.GetSource<UdpServiceData.ClientMessage>();
-                if (message == null)
-                {
-                    return;
-                }
-                string[] ipport;
-                switch (message.Step)
-                {
-                    case UdpServiceData.Steps.客户端连接:
-                        ipport = message.IpPort.Split(':');
-                        if (Application.Current == null)
-                            return;
-                        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                        else
                         {
-                            DataGridItemsSource.Add(new DataGridStructuralBody() { IpAddress = ipport[0], Port = ipport[1].ToInt(), IPENDPORT = message.IpPort });
-                        });
-                        break;
-                    case UdpServiceData.Steps.客户端断开:
-                        if (Application.Current == null)
-                            return;
-                        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-                        {
-                            for (int i = 0; i < DataGridItemsSource.Count; i++)
-                            {
-                                if (DataGridItemsSource[i].IPENDPORT.Equals(message.IpPort))
-                                {
-                                    DataGridItemsSource.RemoveAt(i);
-                                    continue;
-                                }
-                            }
-                        });
-                        break;
-                    case UdpServiceData.Steps.消息接收:
-                        if (message.Bytes != null)
-                        {
-                            if (DataFormat == 0)
-                            {
-                                await uiMessage_DataEvent.ShowAsync($"[ {message.IpPort} ] -> {Encoding.ASCII.GetString(message.Bytes)}");
-                            }
-                            else
-                            {
-                                await uiMessage_DataEvent.ShowAsync($"[ {message.IpPort} ] -> {message.Bytes.ToHexString()}");
-                            }
+                            await uiMessage_DataEvent.ShowAsync($"[ {message.IpPort} ] -> {message.Bytes.ToHexString()}");
                         }
-                        break;
-                }
+                    }
+                    break;
             }
+
         }
 
         private async Task Communication_OnInfoEventAsync(object? sender, EventInfoResult e)
