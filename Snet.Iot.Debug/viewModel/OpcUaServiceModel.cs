@@ -91,9 +91,10 @@ namespace Snet.Iot.Debug.viewModel
         /// </summary>
         public int DataType
         {
-            get => GetProperty(() => DataType);
-            set => SetProperty(() => DataType, value);
+            get => dataType;
+            set => SetProperty(ref dataType, value);
         }
+        private int dataType = 21;
 
         /// <summary>
         /// 节点地址

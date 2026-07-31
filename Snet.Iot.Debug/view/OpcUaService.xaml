@@ -175,7 +175,7 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Content="String"
-                            IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource RadioButtonConverter}, ConverterParameter=20}"
+                            IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource RadioButtonConverter}, ConverterParameter=21}"
                             Style="{StaticResource MaterialDesignSecondaryRadioButton}" />
                         <RadioButton
                             Grid.Row="0"
@@ -183,7 +183,7 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Content="Double"
-                            IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource RadioButtonConverter}, ConverterParameter=2}"
+                            IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource RadioButtonConverter}, ConverterParameter=3}"
                             Style="{StaticResource MaterialDesignSecondaryRadioButton}" />
                         <RadioButton
                             Grid.Row="0"
@@ -191,7 +191,7 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Content="Float"
-                            IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource RadioButtonConverter}, ConverterParameter=3}"
+                            IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource RadioButtonConverter}, ConverterParameter=4}"
                             Style="{StaticResource MaterialDesignSecondaryRadioButton}" />
                         <RadioButton
                             Grid.Row="0"
@@ -199,7 +199,7 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Content="Bool"
-                            IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource RadioButtonConverter}, ConverterParameter=1}"
+                            IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource RadioButtonConverter}, ConverterParameter=2}"
                             Style="{StaticResource MaterialDesignSecondaryRadioButton}" />
                         <RadioButton
                             Grid.Row="0"
@@ -207,7 +207,7 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Content="Int"
-                            IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource RadioButtonConverter}, ConverterParameter=9}"
+                            IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource RadioButtonConverter}, ConverterParameter=10}"
                             Style="{StaticResource MaterialDesignSecondaryRadioButton}" />
                         <RadioButton
                             Grid.Row="0"
@@ -215,7 +215,7 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Content="UInt"
-                            IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource RadioButtonConverter}, ConverterParameter=11}"
+                            IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource RadioButtonConverter}, ConverterParameter=12}"
                             Style="{StaticResource MaterialDesignSecondaryRadioButton}" />
                         <RadioButton
                             Grid.Row="0"
@@ -223,7 +223,7 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Content="Long"
-                            IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource RadioButtonConverter}, ConverterParameter=13}"
+                            IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource RadioButtonConverter}, ConverterParameter=14}"
                             Style="{StaticResource MaterialDesignSecondaryRadioButton}" />
                         <RadioButton
                             Grid.Row="0"
@@ -231,7 +231,7 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Content="ULong"
-                            IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource RadioButtonConverter}, ConverterParameter=15}"
+                            IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource RadioButtonConverter}, ConverterParameter=16}"
                             Style="{StaticResource MaterialDesignSecondaryRadioButton}" />
                         <RadioButton
                             Grid.Row="0"
@@ -239,7 +239,7 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Content="Short"
-                            IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource RadioButtonConverter}, ConverterParameter=5}"
+                            IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource RadioButtonConverter}, ConverterParameter=6}"
                             Style="{StaticResource MaterialDesignSecondaryRadioButton}" />
                         <RadioButton
                             Grid.Row="0"
@@ -247,7 +247,7 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Content="UShort"
-                            IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource RadioButtonConverter}, ConverterParameter=7}"
+                            IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource RadioButtonConverter}, ConverterParameter=8}"
                             Style="{StaticResource MaterialDesignSecondaryRadioButton}" />
                     </Grid>
                 </GroupBox>
