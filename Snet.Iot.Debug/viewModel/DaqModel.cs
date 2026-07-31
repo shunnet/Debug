@@ -288,10 +288,6 @@ namespace Snet.Iot.Debug.viewModel
         IAsyncRelayCommand p_On;
         public async Task OnAsync()
         {
-            if ((await daq.GetBaseObjectAsync()).ResultData == null)
-            {
-                daq = (await daq.CreateInstanceAsync(BasicsData.ToJson(true))).ResultData.GetSource<IDaq>();
-            }
             var result = await daq.OnAsync();
             await uiMessage_InfoEvent.ShowAsync(result.Message);
             if (result.Status)
@@ -542,11 +538,13 @@ namespace Snet.Iot.Debug.viewModel
         /// <summary>
         /// 设置对象
         /// </summary>
-        public void SetObject(string tag)
+        public async Task SetObjectAsync(string tag)
         {
-            LanguageHandler_OnLanguageEventAsync(null, null);
             InitBasicsData(tag);
             this.tag = tag;
+
+            await LanguageHandler_OnLanguageEventAsync(null, null);
+
             //加载编码类型
             foreach (var item in typeof(EncodingType).EnumToList())
             {
@@ -556,7 +554,7 @@ namespace Snet.Iot.Debug.viewModel
             ComboBoxSelectedItem = ComboBoxItemsSource[0];
 
             // 图表操作
-            chartOperate = ChartOperate.Instance(new()
+            chartOperate = await ChartOperate.InstanceAsync(new()
             {
                 ChartControl = ChartControl,
                 LineAdjust = true,
@@ -567,15 +565,15 @@ namespace Snet.Iot.Debug.viewModel
                 RefreshTime = _interval
             });
             chartOperate.On();
-            chartOperate.Style(SkinHandler.GetSkin());
+            chartOperate.SetTheme(SkinHandler.GetSkin());
 
             // 界面消息处理
             uiMessage_DataEvent.OnInfoEventAsync += async (object? sender, Model.data.EventInfoResult e) => DataEvent = e.Message;
-            uiMessage_DataEvent.StartAsync();
+            await uiMessage_DataEvent.StartAsync();
             uiMessage_InfoEvent.OnInfoEventAsync += async (object? sender, Model.data.EventInfoResult e) => InfoEvent = e.Message;
-            uiMessage_InfoEvent.StartAsync();
+            await uiMessage_InfoEvent.StartAsync();
             uiMessage_InteractionEvent.OnInfoEventAsync += async (object? sender, Model.data.EventInfoResult e) => InteractionEvent = e.Message;
-            uiMessage_InteractionEvent.StartAsync();
+            await uiMessage_InteractionEvent.StartAsync();
 
             Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
             Core.handler.LanguageHandler.OnLanguageEventAsync += LanguageHandler_OnLanguageEventAsync;
@@ -597,170 +595,289 @@ namespace Snet.Iot.Debug.viewModel
             switch (tag)
             {
                 case "OpcUa":
-                    daq = new OpcUaClientOperate();
-                    InteractionVisibility = Visibility.Collapsed;
-                    BasicsData = new OpcUaClientData.Basics();
-                    break;
+                    {
+                        InteractionVisibility = Visibility.Collapsed;
+                        var obj = new OpcUaClientData.Basics();
+                        daq = new OpcUaClientOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "OpcDa":
-                    daq = new OpcDaClientOperate();
-                    InteractionVisibility = Visibility.Collapsed;
-                    BasicsData = new OpcDaClientData.Basics();
-                    break;
+                    {
+                        var obj = new OpcDaClientData.Basics();
+                        InteractionVisibility = Visibility.Collapsed;
+                        daq = new OpcDaClientOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "OpcDaHttp":
-                    daq = new OpcDaHttpOperate();
-                    InteractionVisibility = Visibility.Collapsed;
-                    BasicsData = new OpcDaHttpData.Basics();
-                    break;
+                    {
+                        InteractionVisibility = Visibility.Collapsed;
+                        var obj = new OpcDaHttpData.Basics();
+                        daq = new OpcDaHttpOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "TEP":
-                    daq = new TepMasterOperate();
-                    InteractionVisibility = Visibility.Collapsed;
-                    BasicsData = new TepMasterData.Basics();
-                    break;
+                    {
+                        InteractionVisibility = Visibility.Collapsed;
+                        var obj = new TepMasterData.Basics();
+                        daq = new TepMasterOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "Sim":
-                    daq = new SimOperate();
-                    InteractionVisibility = Visibility.Collapsed;
-                    BasicsData = new SimData.Basics();
-                    break;
+                    {
+                        InteractionVisibility = Visibility.Collapsed;
+                        var obj = new SimData.Basics();
+                        daq = new SimOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "DB":
-                    daq = new DBOperate();
-                    InteractionVisibility = Visibility.Collapsed;
-                    BasicsData = new DBData.Basics();
-                    break;
+                    {
+                        InteractionVisibility = Visibility.Collapsed;
+                        var obj = new DBData.Basics();
+                        daq = new DBOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "性能测试":
-                    daq = new PerformanceTestingOperate();
-                    InteractionVisibility = Visibility.Collapsed;
-                    BasicsData = new PerformanceTestingData.Basics();
-                    break;
+                    {
+                        InteractionVisibility = Visibility.Collapsed;
+                        var obj = new PerformanceTestingData.Basics();
+                        daq = new PerformanceTestingOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "罗克韦尔":
-                    daq = new AllenBradleyOperate();
-                    BasicsData = new AllenBradleyData.Basics();
-                    break;
+                    {
+                        var obj = new AllenBradleyData.Basics();
+                        daq = new AllenBradleyOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "倍福":
-                    daq = new BeckhoffOperate();
-                    BasicsData = new BeckhoffData.Basics();
-                    break;
+                    {
+                        var obj = new BeckhoffData.Basics();
+                        daq = new BeckhoffOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "西蒙":
-                    daq = new CimonOperate();
-                    BasicsData = new CimonData.Basics();
-                    break;
+                    {
+                        var obj = new CimonData.Basics();
+                        daq = new CimonOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "台达":
-                    daq = new DeltaOperate();
-                    BasicsData = new DeltaData.Basics();
-                    break;
+                    {
+                        var obj = new DeltaData.Basics();
+                        daq = new DeltaOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "永宏":
-                    daq = new FatekOperate();
-                    BasicsData = new FatekData.Basics();
-                    break;
+                    {
+                        var obj = new FatekData.Basics();
+                        daq = new FatekOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "富士":
-                    daq = new FujiOperate();
-                    BasicsData = new FujiData.Basics();
-                    break;
+                    {
+                        var obj = new FujiData.Basics();
+                        daq = new FujiOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "通用电气":
-                    daq = new GEOperate();
-                    BasicsData = new GEData.Basics();
-                    break;
+                    {
+                        var obj = new GEData.Basics();
+                        daq = new GEOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "汇川":
-                    daq = new InovanceOperate();
-                    BasicsData = new InovanceData.Basics();
-                    break;
+                    {
+                        var obj = new InovanceData.Basics();
+                        daq = new InovanceOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "英威腾":
-                    daq = new InvtOperate();
-                    BasicsData = new InvtData.Basics();
-                    break;
+                    {
+                        var obj = new InvtData.Basics();
+                        daq = new InvtOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "基恩士":
-                    daq = new KeyenceOperate();
-                    BasicsData = new KeyenceData.Basics();
-                    break;
+                    {
+                        var obj = new KeyenceData.Basics();
+                        daq = new KeyenceOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "LSis":
-                    daq = new LSisOperate();
-                    BasicsData = new LSisData.Basics();
-                    break;
+                    {
+                        var obj = new LSisData.Basics();
+                        daq = new LSisOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "麦格米特":
-                    daq = new MegMeetOperate();
-                    BasicsData = new MegMeetData.Basics();
-                    break;
+                    {
+                        var obj = new MegMeetData.Basics();
+                        daq = new MegMeetOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "三菱":
-                    daq = new MitsubishiOperate();
-                    BasicsData = new MitsubishiData.Basics();
-                    break;
+                    {
+                        var obj = new MitsubishiData.Basics();
+                        daq = new MitsubishiOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "Modbus":
-                    daq = new ModbusOperate();
-                    BasicsData = new ModbusData.Basics();
-                    break;
+                    {
+                        var obj = new ModbusData.Basics();
+                        daq = new ModbusOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "欧姆龙":
-                    daq = new OmronOperate();
-                    BasicsData = new OmronData.Basics();
-                    break;
+                    {
+                        var obj = new OmronData.Basics();
+                        daq = new OmronOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "松下":
-                    daq = new PanasonicOperate();
-                    BasicsData = new PanasonicData.Basics();
-                    break;
+                    {
+                        var obj = new PanasonicData.Basics();
+                        daq = new PanasonicOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "电力通讯规约":
-                    daq = new PQDIFOperate();
-                    BasicsData = new PQDIFData.Basics();
-                    break;
+                    {
+                        var obj = new PQDIFData.Basics();
+                        daq = new PQDIFOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "西门子":
-                    daq = new SiemensOperate();
-                    BasicsData = new SiemensData.Basics();
-                    break;
+                    {
+                        var obj = new SiemensData.Basics();
+                        daq = new SiemensOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "丰田":
-                    daq = new ToyotaOperate();
-                    BasicsData = new ToyotaData.Basics();
-                    break;
+                    {
+                        var obj = new ToyotaData.Basics();
+                        daq = new ToyotaOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "丰炜":
-                    daq = new VigorOperate();
-                    BasicsData = new VigorData.Basics();
-                    break;
+                    {
+                        var obj = new VigorData.Basics();
+                        daq = new VigorOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "维控":
-                    daq = new WeConOperate();
-                    BasicsData = new WeConData.Basics();
-                    break;
+                    {
+                        var obj = new WeConData.Basics();
+                        daq = new WeConOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "信捷":
-                    daq = new XinJEOperate();
-                    BasicsData = new XinJEData.Basics();
-                    break;
+                    {
+                        var obj = new XinJEData.Basics();
+                        daq = new XinJEOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "山武":
-                    daq = new YamatakeOperate();
-                    BasicsData = new YamatakeData.Basics();
-                    break;
+                    {
+                        var obj = new YamatakeData.Basics();
+                        daq = new YamatakeOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "安川":
-                    daq = new YaskawaOperate();
-                    BasicsData = new YaskawaData.Basics();
-                    break;
+                    {
+                        var obj = new YaskawaData.Basics();
+                        daq = new YaskawaOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "横河":
-                    daq = new YokogawaOperate();
-                    BasicsData = new YokogawaData.Basics();
-                    break;
+                    {
+                        var obj = new YokogawaData.Basics();
+                        daq = new YokogawaOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "图尔克":
-                    daq = new TurckOperate();
-                    BasicsData = new TurckData.Basics();
-                    break;
+                    {
+                        var obj = new TurckData.Basics();
+                        daq = new TurckOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "理化":
-                    daq = new RKCOperate();
-                    BasicsData = new RKCData.Basics();
-                    break;
+                    {
+                        var obj = new RKCData.Basics();
+                        daq = new RKCOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "自由协议":
-                    daq = new FreedomOperate();
-                    BasicsData = new FreedomData.Basics();
-                    break;
+                    {
+                        var obj = new FreedomData.Basics();
+                        daq = new FreedomOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "发那科":
-                    daq = new Snet.Fanuc.FanucOperate();
-                    BasicsData = new Snet.Fanuc.FanucData.Basics();
-                    break;
+                    {
+                        var obj = new Snet.Fanuc.FanucData.Basics();
+                        daq = new Snet.Fanuc.FanucOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "科伺":
-                    daq = new KossiOperate();
-                    BasicsData = new KossiData.Basics();
-                    break;
+                    {
+                        var obj = new KossiData.Basics();
+                        daq = new KossiOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "东方马达":
-                    daq = new OrientalMotorOperate();
-                    BasicsData = new OrientalMotorData.Basics();
-                    break;
+                    {
+                        var obj = new OrientalMotorData.Basics();
+                        daq = new OrientalMotorOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "宇电":
-                    daq = new YuDianOperate();
-                    BasicsData = new YuDianData.Basics();
-                    break;
+                    {
+                        var obj = new YuDianData.Basics();
+                        daq = new YuDianOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
             }
         }
+
+
         public void Dispose()
         {
             try

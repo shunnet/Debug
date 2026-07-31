@@ -5,6 +5,7 @@ using Snet.Iot.Debug.viewModel;
 using Snet.Model.data;
 using Snet.Utility;
 using Snet.Windows.Controls.handler;
+using Snet.Windows.Core.handler;
 using Snet.Windows.Core.mvvm;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -27,7 +28,7 @@ namespace Snet.Iot.Debug
         private IAsyncRelayCommand? navigationView_Loaded;
         private async Task NavigationView_LoadedAsync(object? sender)
         {
-            Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+            await Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
             {
                 NavigationView view = sender.GetSource<RoutedEventArgs>().Source.GetSource<NavigationView>();
                 if (App.tabDeviceModel == null)
@@ -37,7 +38,7 @@ namespace Snet.Iot.Debug
                 }
                 if (App.tabDeviceModel != null)
                 {
-                    App.tabDeviceModel.AddDevice("关于", App.aboutView);
+                    App.tabDeviceModel.AddDevice("关于", InjectionWpf.GetService<About>());
                 }
             }));
         }
@@ -60,7 +61,7 @@ namespace Snet.Iot.Debug
             {
                 if (view.SelectedItem.TargetPageTag == "关于")
                 {
-                    App.tabDeviceModel.SetSelected(view.SelectedItem.TargetPageTag, App.aboutView);
+                    App.tabDeviceModel.SetSelected(view.SelectedItem.TargetPageTag, InjectionWpf.GetService<About>());
                 }
                 else
                 {
@@ -68,67 +69,67 @@ namespace Snet.Iot.Debug
                     switch (view.SelectedItem.NavigationViewItemParent.TargetPageTag)
                     {
                         case "Daq":
-                            Daq daq = new Daq();
+                            Daq daq = InjectionWpf.GetService<Daq>();
                             DaqModel daqModel = daq.DataContext.GetSource<DaqModel>();
-                            daqModel.SetObject(sTag);
+                            await daqModel.SetObjectAsync(sTag);
                             App.tabDeviceModel.AddDevice(sTag, daq);
                             break;
                         case "DaqService":
                             if (sTag == "OpcUaService")
                             {
-                                OpcUaService opcUaService = new OpcUaService();
+                                OpcUaService opcUaService = InjectionWpf.GetService<OpcUaService>();
                                 App.tabDeviceModel.AddDevice(sTag, opcUaService);
                             }
                             break;
                         case "Mq":
-                            Mq mq = new Mq();
+                            Mq mq = InjectionWpf.GetService<Mq>();
                             MqModel mqModel = mq.DataContext.GetSource<MqModel>();
-                            mqModel.SetObject(sTag);
+                            await mqModel.SetObjectAsync(sTag);
                             App.tabDeviceModel.AddDevice(sTag, mq);
                             break;
                         case "MqService":
                             if (sTag == "MqttService")
                             {
-                                MqttService mqttService = new MqttService();
+                                MqttService mqttService = InjectionWpf.GetService<MqttService>();
                                 App.tabDeviceModel.AddDevice(sTag, mqttService);
                             }
                             else if (sTag == "MqttWsService")
                             {
-                                MqttWebSocketService mqttWebSocketService = new MqttWebSocketService();
+                                MqttWebSocketService mqttWebSocketService = InjectionWpf.GetService<MqttWebSocketService>();
                                 App.tabDeviceModel.AddDevice(sTag, mqttWebSocketService);
                             }
                             else
                             {
-                                NettyService nettyService = new NettyService();
+                                NettyService nettyService = InjectionWpf.GetService<NettyService>();
                                 App.tabDeviceModel.AddDevice(sTag, nettyService);
                             }
                             break;
                         case "通信":
-                            Communication communication = new Communication();
+                            Communication communication = InjectionWpf.GetService<Communication>();
                             CommunicationModel communicationModel = communication.DataContext.GetSource<CommunicationModel>();
-                            communicationModel.SetObject(sTag);
+                            await communicationModel.SetObjectAsync(sTag);
                             App.tabDeviceModel.AddDevice(sTag, communication);
                             break;
                         case "通信服务端":
-                            CommunicationService communicationService = new CommunicationService();
+                            CommunicationService communicationService = InjectionWpf.GetService<CommunicationService>();
                             CommunicationServiceModel communicationServiceModel = communicationService.DataContext.GetSource<CommunicationServiceModel>();
-                            communicationServiceModel.SetObject(sTag);
+                            communicationServiceModel.SetObjectAsync(sTag);
                             App.tabDeviceModel.AddDevice(sTag, communicationService);
                             break;
                         case "工具":
                             if (sTag == "Svg")
                             {
-                                Svg svg = new Svg();
+                                Svg svg = InjectionWpf.GetService<Svg>();
                                 App.tabDeviceModel.AddDevice(sTag, svg);
                             }
                             else if (sTag == "Gif")
                             {
-                                Gif gif = new Gif();
+                                Gif gif = InjectionWpf.GetService<Gif>();
                                 App.tabDeviceModel.AddDevice(sTag, gif);
                             }
                             else if (sTag == "OpcUaNodeBrowsing")
                             {
-                                OpcUaNodeBrowsing opcUaNodeBrowsing = new OpcUaNodeBrowsing();
+                                OpcUaNodeBrowsing opcUaNodeBrowsing = InjectionWpf.GetService<OpcUaNodeBrowsing>();
                                 App.tabDeviceModel.AddDevice(sTag, opcUaNodeBrowsing);
                             }
                             break;

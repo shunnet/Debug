@@ -24,11 +24,6 @@ namespace Snet.Iot.Debug
         public readonly static string IconResourcePath = "pack://application:,,,/Snet.Iot.Debug;component/resources/icons.xaml";
 
         /// <summary>
-        /// 关于页面
-        /// </summary>
-        public readonly static About aboutView = new About();
-
-        /// <summary>
         /// 设备加载
         /// </summary>
         public static TabDeviceControlModel? tabDeviceModel = null;
@@ -96,7 +91,22 @@ namespace Snet.Iot.Debug
             InjectionWpf.AddService(s =>
             {
                 s.AddSingleton(control);
+                s.AddSingleton<About>();
+
+                s.AddTransient<Daq>();
+                s.AddTransient<OpcUaService>();
+                s.AddTransient<Mq>();
+                s.AddTransient<MqttService>();
+                s.AddTransient<MqttWebSocketService>();
+                s.AddTransient<NettyService>();
+                s.AddTransient<Communication>();
+                s.AddTransient<CommunicationService>();
+                s.AddTransient<Svg>();
+                s.AddTransient<Gif>();
+                s.AddTransient<OpcUaNodeBrowsing>();
             });
+
+
             //启动全局异常捕捉
             RegisterEvents();
             //加载本地自定义图标

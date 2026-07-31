@@ -155,8 +155,6 @@ namespace Snet.Iot.Debug.viewModel
         IAsyncRelayCommand p_On;
         public async Task OnAsync()
         {
-            mq = (await mq.CreateInstanceAsync(BasicsData.ToJson(true))).ResultData.GetSource<IMq>();
-
             var result = await mq.OnAsync();
             await uiMessage_InfoEvent.ShowAsync(result.Message);
             if (result.Status)
@@ -249,17 +247,18 @@ namespace Snet.Iot.Debug.viewModel
         /// <summary>
         /// 设置对象
         /// </summary>
-        public void SetObject(string tag)
+        public async Task SetObjectAsync(string tag)
         {
-            LanguageHandler_OnLanguageEventAsync(null, null);
             InitBasicsData(tag);
             this.tag = tag;
 
+            await LanguageHandler_OnLanguageEventAsync(null, null);
+
             // 界面消息处理
             uiMessage_DataEvent.OnInfoEventAsync += async (object? sender, Model.data.EventInfoResult e) => DataEvent = e.Message;
-            uiMessage_DataEvent.StartAsync();
+            await uiMessage_DataEvent.StartAsync();
             uiMessage_InfoEvent.OnInfoEventAsync += async (object? sender, Model.data.EventInfoResult e) => InfoEvent = e.Message;
-            uiMessage_InfoEvent.StartAsync();
+            await uiMessage_InfoEvent.StartAsync();
 
             Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
             Core.handler.LanguageHandler.OnLanguageEventAsync += LanguageHandler_OnLanguageEventAsync;
@@ -281,25 +280,40 @@ namespace Snet.Iot.Debug.viewModel
             switch (tag)
             {
                 case "Mqtt":
-                    mq = new MqttClientOperate();
-                    BasicsData = new MqttClientData.Basics();
-                    break;
+                    {
+                        var obj = new MqttClientData.Basics();
+                        mq = new MqttClientOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "Netty":
-                    mq = new NettyClientOperate();
-                    BasicsData = new NettyClientData.Basics();
-                    break;
+                    {
+                        var obj = new NettyClientData.Basics();
+                        mq = new NettyClientOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "RabbitMQ":
-                    mq = new RabbitMQOperate();
-                    BasicsData = new RabbitMQData.Basics();
-                    break;
+                    {
+                        var obj = new RabbitMQData.Basics();
+                        mq = new RabbitMQOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "Kafka":
-                    mq = new KafkaOperate();
-                    BasicsData = new KafkaData.Basics();
-                    break;
+                    {
+                        var obj = new KafkaData.Basics();
+                        mq = new KafkaOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "NetMQ":
-                    mq = new NetMQOperate();
-                    BasicsData = new NetMQData.Basics();
-                    break;
+                    {
+                        var obj = new NetMQData.Basics();
+                        mq = new NetMQOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
             }
         }
         public void Dispose()

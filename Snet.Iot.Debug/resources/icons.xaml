@@ -169,7 +169,7 @@
         </DrawingImage.Drawing>
     </DrawingImage>
 
-    <!--描述-->
+    <!--  描述  -->
     <DrawingImage x:Key="Description">
         <DrawingImage.Drawing>
             <DrawingGroup>

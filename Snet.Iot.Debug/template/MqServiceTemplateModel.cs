@@ -1,10 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using ICSharpCode.AvalonEdit;
 using Snet.Core.handler;
 using Snet.Model.data;
 using Snet.Model.@enum;
 using Snet.Utility;
 using Snet.Windows.Controls.handler;
+using Snet.Windows.Core.data;
 using Snet.Windows.Core.mvvm;
+using System.Windows.Input;
 
 namespace Snet.Iot.Debug.template
 {
@@ -155,6 +158,48 @@ namespace Snet.Iot.Debug.template
         public virtual async Task OffAsync() { }
 
         #region 事件
+
+        /// <summary>
+        /// 拦截键盘按键，阻止粘贴（Ctrl+V）、删除和退格操作
+        /// </summary>
+        public IAsyncRelayCommand TextEditor_PreviewKeyDown => p_TextEditor_PreviewKeyDown ??= new AsyncRelayCommand<EventCommandArgs>(TextEditor_PreviewKeyDownAsync);
+        IAsyncRelayCommand? p_TextEditor_PreviewKeyDown;
+        public async Task TextEditor_PreviewKeyDownAsync(EventCommandArgs? e)
+        {
+            KeyEventArgs keyEvent = e.EventArgs.GetSource<KeyEventArgs>();
+            if ((keyEvent.Key == System.Windows.Input.Key.V && Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) || keyEvent.Key == System.Windows.Input.Key.Delete || keyEvent.Key == System.Windows.Input.Key.Back)
+            {
+                keyEvent.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// 拦截文本输入，防止用户手动编辑日志内容
+        /// </summary>
+        public IAsyncRelayCommand TextEditor_PreviewTextInput => p_TextEditor_PreviewTextInput ??= new AsyncRelayCommand<EventCommandArgs>(TextEditor_PreviewTextInputAsync);
+        IAsyncRelayCommand? p_TextEditor_PreviewTextInput;
+        public async Task TextEditor_PreviewTextInputAsync(EventCommandArgs? e)
+        {
+            TextCompositionEventArgs eventArgs = e.EventArgs.GetSource<TextCompositionEventArgs>();
+            eventArgs.Handled = true;
+        }
+
+
+        /// <summary>
+        /// 文本内容变化时自动滚动到末尾，保持最新日志可见
+        /// </summary>
+        public IAsyncRelayCommand TextEditor_TextChanged => p_TextEditor_TextChanged ??= new AsyncRelayCommand<EventCommandArgs>(TextEditor_TextChangedAsync);
+        IAsyncRelayCommand p_TextEditor_TextChanged;
+        public async Task TextEditor_TextChangedAsync(EventCommandArgs? e)
+        {
+            TextEditor text = e.Source.GetSource<TextEditor>();
+            text.SelectionStart = text.Text.Length;
+            text.SelectionLength = 0;
+            text.ScrollToEnd();
+        }
+
+
+
         public async Task Mq_OnDataEventAsync(object? sender, EventDataResult e)
         {
             string msg = e.ToJson(true);

@@ -24,6 +24,7 @@
   <a href="https://shunnet.top"><b>🌐 官方网站</b></a> ·
   <a href="https://github.com/shunnet/Debug"><b>📦 GitHub</b></a> ·
   <a href="https://github.com/shunnet/Debug/releases"><b>📥 下载</b></a>
+  <a href="https://github.com/shunnet/Daq"><b>🛠️ 数采工具</b></a> ·
 </p>
 
 

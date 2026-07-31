@@ -34,15 +34,13 @@ namespace Snet.Iot.Debug.chart
     public class ChartOperate : CoreUnify<ChartOperate, ChartData.Basics>, IDisposable, IAsyncDisposable
     {
         /// <summary>
-        /// 无参构造函数<br/>
-        /// </summary>
-        public ChartOperate() : base() { }
-
-        /// <summary>
         /// 有参构造函数<br/>
         /// </summary>
         /// <param name="basics">基础数据</param>
-        public ChartOperate(ChartData.Basics basics) : base(basics) { }
+        public ChartOperate(ChartData.Basics basics) : base(basics)
+        {
+            SetTheme(SkinHandler.GetSkin(), basics.ChartControl);
+        }
 
         /// <summary>
         /// 皮肤切换事件处理器<br/>
@@ -50,7 +48,7 @@ namespace Snet.Iot.Debug.chart
         /// </summary>
         private void SkinHandler_OnSkinEvent(object? sender, EventSkinResult e)
         {
-            Style(e.Skin ??= SkinType.Dark, wpfPlot);
+            SetTheme(e.Skin ??= SkinType.Dark, wpfPlot);
         }
 
         #region 接口重写参数
@@ -630,18 +628,10 @@ namespace Snet.Iot.Debug.chart
         }
 
         /// <summary>
-        /// 将 WPF 的 Color 转换为 System.Drawing.Color（ScottPlot 使用）
-        /// </summary>
-        private System.Drawing.Color ToDrawingColor(System.Windows.Media.Color color)
-        {
-            return System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B);
-        }
-
-        /// <summary>
         /// 应用皮肤样式到 ScottPlot<br/>
         /// 优化点：延迟创建样式对象并复用，避免频繁 new 对象带来的开销。
         /// </summary>
-        public bool Style(SkinType skin, WpfPlot? plot = null)
+        public bool SetTheme(SkinType skin, WpfPlot? plot = null)
         {
             try
             {

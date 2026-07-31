@@ -375,17 +375,18 @@ namespace Snet.Iot.Debug.viewModel
         /// <summary>
         /// 设置对象
         /// </summary>
-        public void SetObject(string tag)
+        public async Task SetObjectAsync(string tag)
         {
-            LanguageHandler_OnLanguageEventAsync(null, null);
             InitBasicsData(tag);
             this.tag = tag;
 
+            await LanguageHandler_OnLanguageEventAsync(null, null);
+
             // 界面消息处理
             uiMessage_DataEvent.OnInfoEventAsync += async (object? sender, Model.data.EventInfoResult e) => DataEvent = e.Message;
-            uiMessage_DataEvent.StartAsync();
+            await uiMessage_DataEvent.StartAsync();
             uiMessage_InfoEvent.OnInfoEventAsync += async (object? sender, Model.data.EventInfoResult e) => InfoEvent = e.Message;
-            uiMessage_InfoEvent.StartAsync();
+            await uiMessage_InfoEvent.StartAsync();
 
             Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
             Core.handler.LanguageHandler.OnLanguageEventAsync += LanguageHandler_OnLanguageEventAsync;
@@ -407,20 +408,26 @@ namespace Snet.Iot.Debug.viewModel
             switch (tag)
             {
                 case "TcpService":
-                    var obj1 = new TcpServiceData.Basics();
-                    communication = new TcpServiceOperate(obj1);
-                    BasicsData = obj1;
-                    break;
+                    {
+                        var obj = new TcpServiceData.Basics();
+                        communication = new TcpServiceOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "WsService":
-                    var obj2 = new WsServiceData.Basics();
-                    communication = new WsServiceOperate(obj2);
-                    BasicsData = obj2;
-                    break;
+                    {
+                        var obj = new WsServiceData.Basics();
+                        communication = new WsServiceOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "UdpService":
-                    var obj3 = new UdpServiceData.Basics();
-                    communication = new UdpServiceOperate(obj3);
-                    BasicsData = obj3;
-                    break;
+                    {
+                        var obj = new UdpServiceData.Basics();
+                        communication = new UdpServiceOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
             }
         }
         public void Dispose()

@@ -307,17 +307,18 @@ namespace Snet.Iot.Debug.viewModel
         /// <summary>
         /// 设置对象
         /// </summary>
-        public void SetObject(string tag)
+        public async Task SetObjectAsync(string tag)
         {
-            LanguageHandler_OnLanguageEventAsync(null, null);
             InitBasicsData(tag);
             this.tag = tag;
 
+            await LanguageHandler_OnLanguageEventAsync(null, null);
+
             // 界面消息处理
             uiMessage_DataEvent.OnInfoEventAsync += async (object? sender, Model.data.EventInfoResult e) => DataEvent = e.Message;
-            uiMessage_DataEvent.StartAsync();
+            await uiMessage_DataEvent.StartAsync();
             uiMessage_InfoEvent.OnInfoEventAsync += async (object? sender, Model.data.EventInfoResult e) => InfoEvent = e.Message;
-            uiMessage_InfoEvent.StartAsync();
+            await uiMessage_InfoEvent.StartAsync();
 
             Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
             Core.handler.LanguageHandler.OnLanguageEventAsync += LanguageHandler_OnLanguageEventAsync;
@@ -339,35 +340,47 @@ namespace Snet.Iot.Debug.viewModel
             switch (tag)
             {
                 case "Tcp":
-                    var obj1 = new TcpClientData.Basics();
-                    communication = new TcpClientOperate(obj1);
-                    BasicsData = obj1;
-                    break;
+                    {
+                        var obj = new TcpClientData.Basics();
+                        communication = new TcpClientOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "Ws":
-                    var obj2 = new WsClientData.Basics();
-                    communication = new WsClientOperate(obj2);
-                    BasicsData = obj2;
-                    break;
+                    {
+                        var obj = new WsClientData.Basics();
+                        communication = new WsClientOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "UdpClient":
-                    var obj3 = new UdpClientData.Basics();
-                    communication = new UdpClientOperate(obj3);
-                    BasicsData = obj3;
-                    break;
+                    {
+                        var obj = new UdpClientData.Basics();
+                        communication = new UdpClientOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "UdpBroadcast":
-                    var obj4 = new UdpBroadcastData.Basics();
-                    communication = new UdpBroadcastOperate(obj4);
-                    BasicsData = obj4;
-                    break;
+                    {
+                        var obj = new UdpBroadcastData.Basics();
+                        communication = new UdpBroadcastOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "UdpMulticast":
-                    var obj5 = new UdpMulticastData.Basics();
-                    communication = new UdpMulticastOperate(obj5);
-                    BasicsData = obj5;
-                    break;
+                    {
+                        var obj = new UdpMulticastData.Basics();
+                        communication = new UdpMulticastOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
                 case "Serial":
-                    var obj6 = new SerialData.Basics();
-                    communication = new SerialOperate(obj6);
-                    BasicsData = obj6;
-                    break;
+                    {
+                        var obj = new SerialData.Basics();
+                        communication = new SerialOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
             }
         }
         public void Dispose()

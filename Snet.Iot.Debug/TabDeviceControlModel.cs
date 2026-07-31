@@ -1,10 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using Snet.Iot.Debug.model;
-using Snet.Windows.Core.handler;
 using Snet.Windows.Core.mvvm;
 using System.Collections.ObjectModel;
 using System.Windows;
-using Application = System.Windows.Application;
 
 namespace Snet.Iot.Debug
 {
@@ -35,11 +33,6 @@ namespace Snet.Iot.Debug
             SelectedDevicesItem = new TabControlDeviceModel(nameKey, control);
             Devices.Insert(0, SelectedDevicesItem);
             AutoCheckTabControlVisibility();
-            Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                SkinHandler.SetSkin(SkinHandler.GetSkin());
-            }, System.Windows.Threading.DispatcherPriority.Background);
-
         }
 
         /// <summary>
