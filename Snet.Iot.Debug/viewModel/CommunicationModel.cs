@@ -275,13 +275,9 @@ namespace Snet.Iot.Debug.viewModel
             {
                 addr = $"{person.Host}";
             }
-            else if (tag == "Tcp")
-            {
-                addr = $"{person.IpAddress}:{person.Port}";
-            }
             else
             {
-                addr = $"{person.PortName}";
+                addr = $"{person.IpAddress}:{person.Port}";
             }
             await uiMessage_DataEvent.ShowAsync(e.Message.Replace("[", "[ ").Replace("]", " ] "));
             if (e.ResultData != null && e.ResultData is byte[])
