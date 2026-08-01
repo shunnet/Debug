@@ -271,13 +271,17 @@ namespace Snet.Iot.Debug.viewModel
         {
             string addr = string.Empty;
             dynamic person = BasicsData;
-            if (tag == "Ws")
+            if (tag == "WsClient")
             {
                 addr = $"{person.Host}";
             }
-            else
+            else if (tag == "TcpClient" || tag == "UdpClient")
             {
                 addr = $"{person.IpAddress}:{person.Port}";
+            }
+            else
+            {
+                addr = $"{person.Port}";
             }
             await uiMessage_DataEvent.ShowAsync(e.Message.Replace("[", "[ ").Replace("]", " ] "));
             if (e.ResultData != null && e.ResultData is byte[])
