@@ -98,8 +98,8 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="SystemTitle" xml:space="preserve">
-    <value>[ Shunnet.top ] Iot 调试工具</value>
-    <comment>[ Shunnet.top ] Iot 调试工具</comment>
+    <value>[ Snet.cn ] Iot 调试工具</value>
+    <comment>[ Snet.cn ] Iot 调试工具</comment>
   </data>
   <data name="关于" xml:space="preserve">
     <value>关于</value>

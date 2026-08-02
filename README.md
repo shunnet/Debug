@@ -1,7 +1,7 @@
 ﻿<h1 align="center">🔧 Snet.Iot.Debug</h1>
 
 <p align="center">
-  <img width="120" height="120" src="https://api.shunnet.top/pic/nuget.png" alt="Snet Logo"/>
+  <img width="120" height="120" src="https://api.snet.cn/pic/nuget.png" alt="Snet Logo"/>
 </p>
 
 <p align="center">
@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-  <a href="https://shunnet.top"><b>🌐 官方网站</b></a> ·
+  <a href="https://snet.cn"><b>🌐 官方网站</b></a> ·
   <a href="https://github.com/shunnet/Debug"><b>📦 GitHub</b></a> ·
   <a href="https://github.com/shunnet/Debug/releases"><b>📥 下载</b></a> ·
   <a href="https://github.com/shunnet/Daq"><b>🛠️ 数采工具</b></a>
@@ -30,7 +30,7 @@
 
 ## ✨ 项目介绍
 
-**Snet.Iot.Debug** 是基于 **Shunnet.top 工业通信库（Snet.Core）** 开发的多协议调试诊断工具，专为工业设备通信调试与协议测试场景设计。与数采工具 [Snet.Iot.Daq](https://github.com/shunnet/Daq) 互补，Debug 聚焦于**单设备/单协议的交互式调试**。
+**Snet.Iot.Debug** 是基于 **Snet.cn 工业通信库（Snet.Core）** 开发的多协议调试诊断工具，专为工业设备通信调试与协议测试场景设计。与数采工具 [Snet.Iot.Daq](https://github.com/shunnet/Daq) 互补，Debug 聚焦于**单设备/单协议的交互式调试**。
 
 ### 🏗️ 项目架构
 
@@ -40,7 +40,7 @@
 ├──────────────────────────────────────────┤
 │   Snet.Core / Snet.Windows.Controls       │  ← 框架层：MVVM 基类 / 控件 / 依赖注入
 ├──────────────────────────────────────────┤
-│   Shunnet.top 工业通信库 (40+ 协议驱动)     │  ← 协议层：DAQ / MQ / 通信 / OPC UA
+│   Snet.cn 工业通信库 (40+ 协议驱动)     │  ← 协议层：DAQ / MQ / 通信 / OPC UA
 └──────────────────────────────────────────┘
 ```
 
@@ -286,7 +286,7 @@ Snet.Iot.Debug/
 
 ## 🙏 致谢
 
-- [Shunnet.top](https://shunnet.top) — 工业通信库
+- [Snet.cn](https://snet.cn) — 工业通信库
 - [Snet.Windows.Controls](https://github.com/shunnet/WpfMUI) — WPF 控件库
 - [ScottPlot](https://scottplot.net) — 科学图表库
 - [WPF UI](https://github.com/lepoco/wpfui) — WPF UI 组件库
@@ -298,7 +298,7 @@ Snet.Iot.Debug/
 
 | 资源 | 链接 |
 |------|------|
-| 🌐 **官方网站** | [shunnet.top](https://shunnet.top) |
+| 🌐 **官方网站** | [snet.cn](https://snet.cn) |
 | 📦 **NuGet 包** | [Snet.Core](https://www.nuget.org/packages/Snet.Core) |
 | 🔌 **数采工具 Daq** | [github.com/shunnet/Daq](https://github.com/shunnet/Daq) |
 

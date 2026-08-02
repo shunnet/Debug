@@ -14,7 +14,7 @@ namespace Snet.Iot.Debug.view
         {
             InitializeComponent();
 
-            _ = InitWebViewAsync(webView, "cache", "https://shunnet.top");
+            _ = InitWebViewAsync(webView, "cache", "https://snet.cn");
         }
 
         /// <summary>

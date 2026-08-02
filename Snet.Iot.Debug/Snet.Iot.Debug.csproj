@@ -8,7 +8,7 @@
 		<UseWPF>true</UseWPF>
 		<SatelliteResourceLanguages>zh-Hans;en</SatelliteResourceLanguages>
 		<ApplicationIcon>icon.ico</ApplicationIcon>
-		<Version>2.0.0.4</Version>
+		<Version>2.0.0.5</Version>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 	<ItemGroup>
@@ -21,50 +21,50 @@
 
 	<ItemGroup>
 		<PackageReference Include="ScottPlot.WPF" Version="5.1.59" />
-		<PackageReference Include="Snet.Windows.Controls" Version="26.212.1" />
+		<PackageReference Include="Snet.Windows.Controls" Version="26.214.1" />
 		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4078.44" />
-		<PackageReference Include="Snet.Mqtt" Version="26.211.1" />
-		<PackageReference Include="Snet.PerformanceTesting" Version="26.211.1" />
-		<PackageReference Include="Snet.Cimon" Version="26.211.1" />
-		<PackageReference Include="Snet.AllenBradley" Version="26.211.1" />
-		<PackageReference Include="Snet.Beckhoff" Version="26.211.1" />
-		<PackageReference Include="Snet.DB" Version="26.211.1" />
-		<PackageReference Include="Snet.Delta" Version="26.211.1" />
-		<PackageReference Include="Snet.Fatek" Version="26.211.1" />
-		<PackageReference Include="Snet.Fuji" Version="26.211.1" />
-		<PackageReference Include="Snet.GE" Version="26.211.1" />
-		<PackageReference Include="Snet.Inovance" Version="26.211.1" />
-		<PackageReference Include="Snet.Invt" Version="26.211.1" />
-		<PackageReference Include="Snet.Kafka" Version="26.211.1" />
-		<PackageReference Include="Snet.Keyence" Version="26.211.1" />
-		<PackageReference Include="Snet.LSis" Version="26.211.1" />
-		<PackageReference Include="Snet.MegMeet" Version="26.211.1" />
-		<PackageReference Include="Snet.Mitsubishi" Version="26.211.1" />
-		<PackageReference Include="Snet.Modbus" Version="26.211.1" />
-		<PackageReference Include="Snet.NetMQ" Version="26.211.1" />
-		<PackageReference Include="Snet.Netty" Version="26.211.1" />
-		<PackageReference Include="Snet.Opc" Version="26.211.1" />
-		<PackageReference Include="Snet.Panasonic" Version="26.211.1" />
-		<PackageReference Include="Snet.PQDIF" Version="26.211.1" />
-		<PackageReference Include="Snet.RabbitMQ" Version="26.211.1" />
-		<PackageReference Include="Snet.Siemens" Version="26.211.1" />
-		<PackageReference Include="Snet.Omron" Version="26.211.1" />
-		<PackageReference Include="Snet.Sim" Version="26.211.1" />
-		<PackageReference Include="Snet.TEP" Version="26.211.1" />
-		<PackageReference Include="Snet.Toyota" Version="26.211.1" />
-		<PackageReference Include="Snet.Vigor" Version="26.211.1" />
-		<PackageReference Include="Snet.WeCon" Version="26.211.1" />
-		<PackageReference Include="Snet.XinJE" Version="26.211.1" />
-		<PackageReference Include="Snet.Yamatake" Version="26.211.1" />
-		<PackageReference Include="Snet.Yaskawa" Version="26.211.1" />
-		<PackageReference Include="Snet.Yokogawa" Version="26.211.1" />
-		<PackageReference Include="Snet.Fanuc" Version="26.211.1" />
-		<PackageReference Include="Snet.Freedom" Version="26.211.1" />
-		<PackageReference Include="Snet.RKC" Version="26.211.1" />
-		<PackageReference Include="Snet.Turck" Version="26.211.1" />
-		<PackageReference Include="Snet.Kossi" Version="26.211.1" />
-		<PackageReference Include="Snet.OrientalMotor" Version="26.211.1" />
-		<PackageReference Include="Snet.YuDian" Version="26.211.1" />
+		<PackageReference Include="Snet.Mqtt" Version="26.214.1" />
+		<PackageReference Include="Snet.PerformanceTesting" Version="26.214.1" />
+		<PackageReference Include="Snet.Cimon" Version="26.214.1" />
+		<PackageReference Include="Snet.AllenBradley" Version="26.214.1" />
+		<PackageReference Include="Snet.Beckhoff" Version="26.214.1" />
+		<PackageReference Include="Snet.DB" Version="26.214.1" />
+		<PackageReference Include="Snet.Delta" Version="26.214.1" />
+		<PackageReference Include="Snet.Fatek" Version="26.214.1" />
+		<PackageReference Include="Snet.Fuji" Version="26.214.1" />
+		<PackageReference Include="Snet.GE" Version="26.214.1" />
+		<PackageReference Include="Snet.Inovance" Version="26.214.1" />
+		<PackageReference Include="Snet.Invt" Version="26.214.1" />
+		<PackageReference Include="Snet.Kafka" Version="26.214.1" />
+		<PackageReference Include="Snet.Keyence" Version="26.214.1" />
+		<PackageReference Include="Snet.LSis" Version="26.214.1" />
+		<PackageReference Include="Snet.MegMeet" Version="26.214.1" />
+		<PackageReference Include="Snet.Mitsubishi" Version="26.214.1" />
+		<PackageReference Include="Snet.Modbus" Version="26.214.1" />
+		<PackageReference Include="Snet.NetMQ" Version="26.214.1" />
+		<PackageReference Include="Snet.Netty" Version="26.214.1" />
+		<PackageReference Include="Snet.Opc" Version="26.214.1" />
+		<PackageReference Include="Snet.Panasonic" Version="26.214.1" />
+		<PackageReference Include="Snet.PQDIF" Version="26.214.1" />
+		<PackageReference Include="Snet.RabbitMQ" Version="26.214.1" />
+		<PackageReference Include="Snet.Siemens" Version="26.214.1" />
+		<PackageReference Include="Snet.Omron" Version="26.214.1" />
+		<PackageReference Include="Snet.Sim" Version="26.214.1" />
+		<PackageReference Include="Snet.TEP" Version="26.214.1" />
+		<PackageReference Include="Snet.Toyota" Version="26.214.1" />
+		<PackageReference Include="Snet.Vigor" Version="26.214.1" />
+		<PackageReference Include="Snet.WeCon" Version="26.214.1" />
+		<PackageReference Include="Snet.XinJE" Version="26.214.1" />
+		<PackageReference Include="Snet.Yamatake" Version="26.214.1" />
+		<PackageReference Include="Snet.Yaskawa" Version="26.214.1" />
+		<PackageReference Include="Snet.Yokogawa" Version="26.214.1" />
+		<PackageReference Include="Snet.Fanuc" Version="26.214.1" />
+		<PackageReference Include="Snet.Freedom" Version="26.214.1" />
+		<PackageReference Include="Snet.RKC" Version="26.214.1" />
+		<PackageReference Include="Snet.Turck" Version="26.214.1" />
+		<PackageReference Include="Snet.Kossi" Version="26.214.1" />
+		<PackageReference Include="Snet.OrientalMotor" Version="26.214.1" />
+		<PackageReference Include="Snet.YuDian" Version="26.214.1" />
 	</ItemGroup>
 
 	<ItemGroup>
