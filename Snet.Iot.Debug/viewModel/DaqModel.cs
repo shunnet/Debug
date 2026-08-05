@@ -83,9 +83,9 @@ namespace Snet.Iot.Debug.viewModel
         /// <summary>
         /// ui信息处理器
         /// </summary>
-        private UiMessageHandler uiMessage_InfoEvent = new UiMessageHandler("InfoEvent");
-        private UiMessageHandler uiMessage_DataEvent = new UiMessageHandler("DataEvent");
-        private UiMessageHandler uiMessage_InteractionEvent = new UiMessageHandler("InteractionEvent");
+        private UiMessageHandler uiMessage_InfoEvent = new UiMessageHandler($"InfoEvent·{Guid.NewGuid().ToString()}");
+        private UiMessageHandler uiMessage_DataEvent = new UiMessageHandler($"DataEvent·{Guid.NewGuid().ToString()}");
+        private UiMessageHandler uiMessage_InteractionEvent = new UiMessageHandler($"InteractionEvent·{Guid.NewGuid().ToString()}");
 
         /// <summary>
         /// 选中的下标

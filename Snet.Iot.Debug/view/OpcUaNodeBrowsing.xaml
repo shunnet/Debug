@@ -151,7 +151,10 @@
                         Margin="5,5,0,5"
                         Background="Transparent"
                         ItemsSource="{Binding Node}"
-                        Style="{StaticResource DefaultTreeViewStyle}">
+                        ScrollViewer.CanContentScroll="True"
+                        Style="{StaticResource DefaultTreeViewStyle}"
+                        VirtualizingPanel.IsVirtualizing="True"
+                        VirtualizingPanel.VirtualizationMode="Recycling">
                         <!--  右键菜单  -->
                         <TreeView.ContextMenu>
                             <ContextMenu
@@ -266,6 +269,7 @@
                         </DataTemplate>
                     </GroupBox.HeaderTemplate>
                     <DataGrid
+                        Margin="5"
                         snet:ResxLocalizationProvider.DefaultAssembly="Snet.Iot.Debug"
                         snet:ResxLocalizationProvider.DefaultDictionary="Language"
                         ui:DataGridAssist.CornerRadius="0"

@@ -55,8 +55,8 @@ namespace Snet.Iot.Debug.template
         /// <summary>
         /// ui信息处理器
         /// </summary>
-        public UiMessageHandler uiMessage_InfoEvent = new UiMessageHandler("InfoEvent");
-        public UiMessageHandler uiMessage_DataEvent = new UiMessageHandler("DataEvent");
+        protected UiMessageHandler uiMessage_InfoEvent = new UiMessageHandler($"InfoEvent·{Guid.NewGuid().ToString()}");
+        protected UiMessageHandler uiMessage_DataEvent = new UiMessageHandler($"DataEvent·{Guid.NewGuid().ToString()}");
 
 
         /// <summary>

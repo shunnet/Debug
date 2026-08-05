@@ -16,6 +16,9 @@
     snet:ResxLocalizationProvider.DefaultDictionary="Language"
     Icon="/icon.ico"
     LoadAnimationEnabled="False"
+    ScrollViewer.CanContentScroll="True"
+    VirtualizingPanel.IsVirtualizing="True"
+    VirtualizingPanel.VirtualizationMode="Recycling"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
     <Grid x:Name="mainGrid">
