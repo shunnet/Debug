@@ -316,12 +316,41 @@
                             </Style>
 
                         </DataGrid.Resources>
-                        <!--  双击  -->
                         <i:Interaction.Triggers>
+                            <!--  双击  -->
                             <i:EventTrigger EventName="SelectedCellsChanged">
                                 <snet:EventCommand Command="{Binding DataGrid_SelectedCellsChanged}" />
                             </i:EventTrigger>
+                            <!--  内容菜单打开  -->
+                            <i:EventTrigger EventName="ContextMenuOpening">
+                                <snet:EventCommand Command="{Binding DataGrid_ContextMenuOpening}" />
+                            </i:EventTrigger>
+                            <!--  右键按下  -->
+                            <i:EventTrigger EventName="PreviewMouseRightButtonDown">
+                                <snet:EventCommand Command="{Binding DataGrid_PreviewMouseRightButtonDown}" />
+                            </i:EventTrigger>
                         </i:Interaction.Triggers>
+                        <!--  右键菜单  -->
+                        <DataGrid.ContextMenu>
+                            <ContextMenu VerticalContentAlignment="Center">
+                                <ContextMenu.Style>
+                                    <Style BasedOn="{StaticResource UiContextMenu}" TargetType="{x:Type ContextMenu}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path=PlacementTarget.DataContext.NodeMessageSelectedItem, RelativeSource={RelativeSource Self}}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ContextMenu.Style>
+
+                                <uis:MenuItem
+                                    snet:ResxLocalizationProvider.DefaultAssembly="Snet.Iot.Debug"
+                                    snet:ResxLocalizationProvider.DefaultDictionary="Language"
+                                    Command="{Binding Path=DataContext.Copy, RelativeSource={RelativeSource Self}}"
+                                    Header="{snet:Loc 复制地址名称}"
+                                    Icon="{uis:SymbolIcon Symbol=Copy24}" />
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
                         <DataGrid.Columns>
                             <DataGridTextColumn
                                 Width="*"

@@ -8,7 +8,7 @@
 		<UseWPF>true</UseWPF>
 		<SatelliteResourceLanguages>zh-Hans;en</SatelliteResourceLanguages>
 		<ApplicationIcon>icon.ico</ApplicationIcon>
-		<Version>2.0.0.7</Version>
+		<Version>2.0.0.8</Version>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 	<ItemGroup>
@@ -21,7 +21,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="ScottPlot.WPF" Version="5.1.59" />
-		<PackageReference Include="Snet.Windows.Controls" Version="26.216.1" />
+		<PackageReference Include="Snet.Windows.Controls" Version="26.217.1" />
 		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4129.50" />
 		<PackageReference Include="Snet.Mqtt" Version="26.216.1" />
 		<PackageReference Include="Snet.PerformanceTesting" Version="26.216.1" />
@@ -43,7 +43,7 @@
 		<PackageReference Include="Snet.Modbus" Version="26.216.1" />
 		<PackageReference Include="Snet.NetMQ" Version="26.216.1" />
 		<PackageReference Include="Snet.Netty" Version="26.216.1" />
-		<PackageReference Include="Snet.Opc" Version="26.216.1" />
+		<PackageReference Include="Snet.Opc" Version="26.217.1" />
 		<PackageReference Include="Snet.Panasonic" Version="26.216.1" />
 		<PackageReference Include="Snet.PQDIF" Version="26.216.1" />
 		<PackageReference Include="Snet.RabbitMQ" Version="26.216.1" />

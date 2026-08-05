@@ -1042,6 +1042,15 @@ namespace Snet.Iot.Debug {
         }
         
         /// <summary>
+        ///   查找类似 复制地址名称 的本地化字符串。
+        /// </summary>
+        internal static string 复制地址名称 {
+            get {
+                return ResourceManager.GetString("复制地址名称", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 复制结果 的本地化字符串。
         /// </summary>
         internal static string 复制结果 {

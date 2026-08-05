@@ -1,5 +1,5 @@
-﻿using ICSharpCode.AvalonEdit;
-using Snet.Iot.Debug.handler;
+﻿using Snet.Iot.Debug.handler;
+using Snet.Windows.Controls.edit;
 using Snet.Windows.Controls.handler;
 using System.Windows;
 using System.Windows.Controls;

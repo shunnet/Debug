@@ -78,6 +78,68 @@ namespace Snet.Iot.Debug.viewModel
         }
 
         /// <summary>
+        /// 内容菜单打开触发
+        /// </summary>
+        public IAsyncRelayCommand DataGrid_ContextMenuOpening => dataGrid_ContextMenuOpening ??= new AsyncRelayCommand<ContextMenuEventArgs>(DataGrid_ContextMenuOpeningAsync);
+        private IAsyncRelayCommand? dataGrid_ContextMenuOpening;
+        private Task DataGrid_ContextMenuOpeningAsync(ContextMenuEventArgs? e)
+        {
+            if (e?.Source is not DataGrid dataGrid)
+                return Task.CompletedTask;
+
+            // 最终裁决：
+            // 只要当前不是“行右键”，就禁止弹出
+            if (dataGrid.SelectedItem == null)
+            {
+                e.Handled = true;
+            }
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 鼠标右键点击触发
+        /// </summary>
+        public IAsyncRelayCommand DataGrid_PreviewMouseRightButtonDown => dataGrid_PreviewMouseRightButtonDown ??= new AsyncRelayCommand<MouseButtonEventArgs>(DataGrid_PreviewMouseRightButtonDownAsync);
+        private IAsyncRelayCommand? dataGrid_PreviewMouseRightButtonDown;
+        private Task DataGrid_PreviewMouseRightButtonDownAsync(MouseButtonEventArgs? e)
+        {
+            if (e?.Source is not DataGrid dataGrid)
+                return Task.CompletedTask;
+
+            System.Windows.DependencyObject dep = (System.Windows.DependencyObject)e.OriginalSource;
+
+            while (dep != null && dep is not DataGridRow)
+                dep = VisualTreeHelper.GetParent(dep);
+
+            if (dep is DataGridRow row)
+            {
+                // 右键在行上
+                dataGrid.SelectedItem = row.Item;
+                row.IsSelected = true;
+                row.Focus();
+            }
+            else
+            {
+                // 右键空白：清空选择
+                dataGrid.SelectedItem = null;
+                e.Handled = true; // 阻止默认右键
+            }
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 复制
+        /// </summary>
+        public IAsyncRelayCommand Copy => p_Copy ??= new AsyncRelayCommand(CopyAsync);
+        IAsyncRelayCommand? p_Copy;
+        public async Task CopyAsync()
+        {
+            if (NodeMessageSelectedItem == null)
+                return;
+            System.Windows.Clipboard.SetDataObject(NodeMessageSelectedItem.Address);
+        }
+
+        /// <summary>
         /// 打开
         /// </summary>
         public IAsyncRelayCommand On => p_On ??= new AsyncRelayCommand(OnAsync);

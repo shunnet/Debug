@@ -318,18 +318,18 @@
                                 </Button>
 
                                 <!--  数据框  -->
-                                <edit:TextEditor
+                                <snet:TextEditorControl
                                     x:Name="edit1"
                                     h:EditBindingHandler.EditText="{Binding InfoEvent}"
                                     IsReadOnly="True"
                                     PreviewKeyDown="TextEditor_PreviewKeyDown"
                                     PreviewTextInput="TextEditor_PreviewTextInput"
                                     TextChanged="TextEditor_TextChanged">
-                                    <edit:TextEditor.Resources>
+                                    <snet:TextEditorControl.Resources>
                                         <Style BasedOn="{StaticResource UiScrollViewer}" TargetType="ScrollViewer" />
                                         <Style BasedOn="{StaticResource UiScrollBar}" TargetType="ScrollBar" />
-                                    </edit:TextEditor.Resources>
-                                </edit:TextEditor>
+                                    </snet:TextEditorControl.Resources>
+                                </snet:TextEditorControl>
 
                             </Grid>
                         </GroupBox>
@@ -414,18 +414,18 @@
                                 </Button>
 
                                 <!--  数据框  -->
-                                <edit:TextEditor
+                                <snet:TextEditorControl
                                     x:Name="edit2"
                                     h:EditBindingHandler.EditText="{Binding DataEvent}"
                                     IsReadOnly="True"
                                     PreviewKeyDown="TextEditor_PreviewKeyDown"
                                     PreviewTextInput="TextEditor_PreviewTextInput"
                                     TextChanged="TextEditor_TextChanged">
-                                    <edit:TextEditor.Resources>
+                                    <snet:TextEditorControl.Resources>
                                         <Style BasedOn="{StaticResource UiScrollViewer}" TargetType="ScrollViewer" />
                                         <Style BasedOn="{StaticResource UiScrollBar}" TargetType="ScrollBar" />
-                                    </edit:TextEditor.Resources>
-                                </edit:TextEditor>
+                                    </snet:TextEditorControl.Resources>
+                                </snet:TextEditorControl>
 
                             </Grid>
                         </GroupBox>

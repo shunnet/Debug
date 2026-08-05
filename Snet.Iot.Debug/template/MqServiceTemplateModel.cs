@@ -1,9 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.Input;
-using ICSharpCode.AvalonEdit;
 using Snet.Core.handler;
 using Snet.Model.data;
 using Snet.Model.@enum;
 using Snet.Utility;
+using Snet.Windows.Controls.edit;
 using Snet.Windows.Controls.handler;
 using Snet.Windows.Core.data;
 using Snet.Windows.Core.mvvm;

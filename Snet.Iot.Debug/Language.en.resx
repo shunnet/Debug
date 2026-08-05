@@ -816,4 +816,7 @@
   <data name="连接已经打开，如需更换请先关闭此连接" xml:space="preserve">
     <value>The connection is already open. If you need to replace it, please close this connection first</value>
   </data>
+  <data name="复制地址名称" xml:space="preserve">
+    <value>CopyAddressName</value>
+  </data>
 </root>

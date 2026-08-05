@@ -797,4 +797,7 @@
   <data name="连接已经打开，如需更换请先关闭此连接" xml:space="preserve">
     <value>连接已经打开，如需更换请先关闭此连接</value>
   </data>
+  <data name="复制地址名称" xml:space="preserve">
+    <value>复制地址名称</value>
+  </data>
 </root>
