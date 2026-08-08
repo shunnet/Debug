@@ -8,7 +8,7 @@
 		<UseWPF>true</UseWPF>
 		<SatelliteResourceLanguages>zh-Hans;en</SatelliteResourceLanguages>
 		<ApplicationIcon>icon.ico</ApplicationIcon>
-		<Version>2.0.0.9</Version>
+		<Version>2.0.1.0</Version>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 	<ItemGroup>
@@ -43,7 +43,7 @@
 		<PackageReference Include="Snet.Modbus" Version="26.220.1" />
 		<PackageReference Include="Snet.NetMQ" Version="26.220.1" />
 		<PackageReference Include="Snet.Netty" Version="26.220.1" />
-		<PackageReference Include="Snet.Opc" Version="26.220.1" />
+		<PackageReference Include="Snet.Opc" Version="26.220.2" />
 		<PackageReference Include="Snet.Panasonic" Version="26.220.1" />
 		<PackageReference Include="Snet.PQDIF" Version="26.220.1" />
 		<PackageReference Include="Snet.RabbitMQ" Version="26.220.1" />
