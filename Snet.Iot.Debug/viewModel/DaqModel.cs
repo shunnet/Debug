@@ -59,10 +59,6 @@ namespace Snet.Iot.Debug.viewModel
     public class DaqModel : BindNotify, IDisposable, IAsyncDisposable
     {
         #region 属性
-        /// <summary>
-        /// 间隔
-        /// </summary>
-        private int _interval = 500;
 
         /// <summary>
         /// 图表操作
@@ -561,8 +557,7 @@ namespace Snet.Iot.Debug.viewModel
                 LineRemove = true,
                 DataRemove = true,
                 YCrosshairText = true,
-                XCrosshairText = true,
-                RefreshTime = _interval
+                XCrosshairText = true
             });
             chartOperate.On();
             chartOperate.SetTheme(SkinHandler.GetSkin());

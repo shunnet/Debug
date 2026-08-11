@@ -71,7 +71,7 @@ namespace Snet.Iot.Debug.chart
             /// <summary>
             /// 刷新时间
             /// </summary>
-            public int RefreshTime { get; set; }
+            public int RefreshTime { get; set; } = 100;
 
             /// <summary>
             /// Y轴的十字准线数据
