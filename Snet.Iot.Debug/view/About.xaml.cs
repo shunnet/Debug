@@ -1,6 +1,6 @@
 ﻿using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
-using Snet.Windows.Controls.message;
+using Snet.Log;
 using System.Windows.Controls;
 
 namespace Snet.Iot.Debug.view
@@ -38,8 +38,8 @@ namespace Snet.Iot.Debug.view
             }
             catch (Exception ex)
             {
-                // 出错时提示（实际项目里可写到日志）
-                await MessageBox.Show($"WebView2 初始化失败: {ex.Message}");
+                // 出错时提示（实际项目里可写到日志）   静默写入日志
+                await LogHelper.ErrorAsync($"WebView2 初始化失败: {ex.Message}", foldername: "About", exception: ex);
             }
         }
     }
