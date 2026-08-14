@@ -8,6 +8,7 @@ using Snet.Mqtt.client;
 using Snet.NetMQ;
 using Snet.Netty.client;
 using Snet.RabbitMQ;
+using Snet.RocketMQ;
 using Snet.Utility;
 using Snet.Windows.Controls.handler;
 using Snet.Windows.Core.mvvm;
@@ -311,6 +312,13 @@ namespace Snet.Iot.Debug.viewModel
                     {
                         var obj = new NetMQData.Basics();
                         mq = new NetMQOperate(obj);
+                        BasicsData = obj;
+                        break;
+                    }
+                case "RocketMQ":
+                    {
+                        var obj = new RocketMQData.Basics();
+                        mq = new RocketMQOperate(obj);
                         BasicsData = obj;
                         break;
                     }

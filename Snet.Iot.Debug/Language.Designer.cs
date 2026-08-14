@@ -304,6 +304,15 @@ namespace Snet.Iot.Debug {
         }
         
         /// <summary>
+        ///   查找类似 [ RocketMQ ] 的本地化字符串。
+        /// </summary>
+        internal static string RocketMQ {
+            get {
+                return ResourceManager.GetString("RocketMQ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 [ 串口 ] 的本地化字符串。
         /// </summary>
         internal static string Serial {

@@ -800,4 +800,7 @@
   <data name="复制地址名称" xml:space="preserve">
     <value>复制地址名称</value>
   </data>
+  <data name="RocketMQ" xml:space="preserve">
+    <value>[ RocketMQ ]</value>
+  </data>
 </root>

@@ -191,7 +191,7 @@ namespace Snet.Iot.Debug
                     ContentStringFormat ="Mq",
                     Icon = SymbolRegular.Flowchart24,
                     SubIcon = SymbolRegular.PlayMultiple16,
-                    SubNames = new[] { "Mqtt", "Netty", "RabbitMQ", "Kafka", "NetMQ" }
+                    SubNames = new[] { "Mqtt", "Netty", "RabbitMQ", "Kafka", "NetMQ", "RocketMQ" }
                 },
                 new
                 {
