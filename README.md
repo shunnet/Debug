@@ -162,7 +162,7 @@ Snet.Iot.Debug/
 | 渠道 | 链接 |
 |------|------|
 | 🌐 **官方网站** | [snet.cn](https://snet.cn) |
-| 📦 **NuGet 包** | [Snet.Core](https://www.nuget.org/packages/Snet.Core) |
+| 📦 **NuGet Package** | [Snet](https://www.nuget.org/profiles/Shun) |
 | 🔌 **数采工具 Daq** | [github.com/shunnet/Daq](https://github.com/shunnet/Daq) |
 | 🐛 **Issues** | [GitHub Issues](https://github.com/shunnet/Debug/issues) — 反馈 Bug 或功能建议 |
 | 💬 **QQ 群** | [点击加群](https://qm.qq.com/q/gPjrD9wGty) — 技术交流与问答 |
