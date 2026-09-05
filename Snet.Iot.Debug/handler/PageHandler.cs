@@ -4,18 +4,18 @@ using Snet.Iot.Debug.model;
 namespace Snet.Iot.Debug.handler
 {
     /// <summary>
-    /// ReferenceDescriptionCollection 的分页扩展方法
+    /// ReferenceDescription 集合的分页扩展方法
     /// </summary>
     public static class PageHandler
     {
         /// <summary>
-        /// 对 ReferenceDescriptionCollection 进行分页处理，返回包含分页信息的结果对象。
+        /// 对 ReferenceDescription 集合进行分页处理，返回包含分页信息的结果对象。
         /// </summary>
-        /// <param name="source">原始 ReferenceDescriptionCollection 集合</param>
+        /// <param name="source">原始 ReferenceDescription 集合</param>
         /// <param name="pageIndex">页索引，从 0 开始</param>
         /// <param name="pageSize">每页数据条数，必须大于 0</param>
         /// <returns>PagedResult 对象，包含当前页数据、总数、页码等信息</returns>
-        public static PagedResult<ReferenceDescription> ToPagedResult(this ReferenceDescriptionCollection source, int pageIndex, int pageSize = 25)
+        public static PagedResult<ReferenceDescription> ToPagedResult(this List<ReferenceDescription> source, int pageIndex, int pageSize = 25)
         {
             // 参数校验
             if (source == null)

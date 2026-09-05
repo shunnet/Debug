@@ -247,6 +247,10 @@ namespace Snet.Iot.Debug.viewModel
         IAsyncRelayCommand p_Off;
         public async Task OffAsync()
         {
+            if (Communication == null)
+            {
+                return;  // 未启动，无需关闭
+            }
             var result = await Communication.OffAsync();
             await uiMessage_InfoEvent.ShowAsync(result.Message);
             if (result.Status)

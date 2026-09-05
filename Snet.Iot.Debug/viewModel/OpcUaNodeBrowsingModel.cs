@@ -243,11 +243,8 @@ namespace Snet.Iot.Debug.viewModel
                 nodeIds.Add(nodeId);
             }
 
-            var dataValues = Daq.DetailedReadAllNodeData(nodeIds).GetSource<DataValue[]>();
-            if (dataValues != null)
-            {
-                await ShowDetailedMessageAsync(nodeId.ToString(), dataValues, nodeIds, selectedNode.IsLoading);
-            }
+            DataValue[] dataValues = await Daq.DetailedReadAllNodeDataAsync(nodeIds, browseToken.Token);
+            await ShowDetailedMessageAsync(nodeId.ToString(), dataValues, nodeIds, selectedNode.IsLoading);
         }
 
         // 表格被选中时更新地址绑定
@@ -279,7 +276,7 @@ namespace Snet.Iot.Debug.viewModel
         }
 
         // 分割 DataValue[] 为指定列宽度
-        private async Task<List<object[]>> SegmentationAsync(object[] data, int segmentSize)
+        private Task<List<object[]>> SegmentationAsync<T>(T[] data, int segmentSize)
         {
             var result = new List<object[]>();
             for (int i = 0; i < data.Length; i += segmentSize)
@@ -290,7 +287,7 @@ namespace Snet.Iot.Debug.viewModel
 
                 result.Add(segment);
             }
-            return await Task.FromResult(result).ConfigureAwait(false);
+            return Task.FromResult(result);
         }
 
         // 缓存 NodeId 的字典
@@ -313,12 +310,12 @@ namespace Snet.Iot.Debug.viewModel
 
                         var data = new OpcUaNodeBrowseMessageStructuralBody
                         {
-                            Name = nodeIds[i].Identifier.ToString(),
+                            Name = nodeIds[i].IdentifierAsString,
                             Address = nodeIds[i].ToString(),
                             Value = segment[1]?.ToString(),
-                            Type = Daq.GetNodeValueType(nodeIds[i]).GetSource<BuiltInType>().ToString(),
+                            Type = (await Daq.GetNodeValueTypeAsync(nodeIds[i], browseToken.Token)).GetSource<BuiltInType>().ToString(),
                             Description = segment[4]?.ToString(),
-                            AccessLevel = Daq.GetAccessLevel((DataValue)segment[2])
+                            AccessLevel = await Daq.GetAccessLevelAsync((DataValue)segment[2], browseToken.Token)
                         };
                         nodeMessage.Add(data);
                     }
@@ -393,33 +390,30 @@ namespace Snet.Iot.Debug.viewModel
         /// </summary>
         private async Task GetNodeInformAsync(CancellationToken token)
         {
-            var id = Daq.GetNodeID().GetSource<NodeId>();
-            ReferenceDescriptionCollection references = (await Daq.GetAllNode(id)).GetSource<ReferenceDescriptionCollection>();
+            NodeId id = (NodeId)ObjectIds.ObjectsFolder;
+            List<ReferenceDescription> references = await Daq.GetAllNodeAsync(id, token);
             foreach (var reference in references)
             {
                 if (token.IsCancellationRequested) return; // 取消操作
 
-                var childRefs = (await Daq.GetAllNode((NodeId)reference.NodeId)).GetSource<ReferenceDescriptionCollection>();
+                List<ReferenceDescription> childRefs = await Daq.GetAllNodeAsync((NodeId)reference.NodeId, token);
 
-                if (childRefs != null)
+                if (token.IsCancellationRequested)
+                    return;
+
+                var iconName = await Daq.GetNodeIconTypeAsync(reference, id, token);
+
+                var body = new OpcUaNodeBrowseStructuralBody
                 {
-                    if (token.IsCancellationRequested)
-                        return;
-
-                    var iconName = await Daq.GetNodeIconType(reference, id);
-
-                    var body = new OpcUaNodeBrowseStructuralBody
-                    {
-                        Name = reference.BrowseName.Name,
-                        NodeID = reference,
-                        Icon = await GetIcon(iconName),
-                        IconKey = iconName,
-                        Count = childRefs.Count > 0 ? $"( {childRefs.Count} )" : string.Empty
-                    };
-                    if (childRefs.Count > 0)
-                        body.Children.Add(new());
-                    await Application.Current.Dispatcher.InvokeAsync(() => Node.Add(body));
-                }
+                    Name = reference.BrowseName.Name,
+                    NodeID = reference,
+                    Icon = await GetIcon(iconName),
+                    IconKey = iconName,
+                    Count = childRefs.Count > 0 ? $"( {childRefs.Count} )" : string.Empty
+                };
+                if (childRefs.Count > 0)
+                    body.Children.Add(new());
+                await Application.Current.Dispatcher.InvokeAsync(() => Node.Add(body));
             }
         }
 
@@ -429,8 +423,8 @@ namespace Snet.Iot.Debug.viewModel
             try
             {
                 if (parent.IsLoading) return;
-                var id = Daq.GetNodeID().GetSource<NodeId>();
-                ReferenceDescriptionCollection references = (await Daq.GetAllNode(nodeId)).GetSource<ReferenceDescriptionCollection>();
+                NodeId id = (NodeId)ObjectIds.ObjectsFolder;
+                List<ReferenceDescription> references = await Daq.GetAllNodeAsync(nodeId, token);
                 PagedResult<ReferenceDescription> result = PageHandler.ToPagedResult(references, parent.PageIndex);
                 if (references.Count > result.PageSize && !result.IsLastPage)
                 {
@@ -445,31 +439,27 @@ namespace Snet.Iot.Debug.viewModel
                 {
                     if (token.IsCancellationRequested) return; // 取消操作
 
-                    var childRefs = (await Daq.GetAllNode((NodeId)reference.NodeId)).GetSource<ReferenceDescriptionCollection>();
+                    List<ReferenceDescription> childRefs = await Daq.GetAllNodeAsync((NodeId)reference.NodeId, token);
 
-                    if (childRefs != null)
+                    var iconName = await Daq.GetNodeIconTypeAsync(reference, id, token);
+
+                    var body = new OpcUaNodeBrowseStructuralBody
                     {
-
-                        var iconName = await Daq.GetNodeIconType(reference, id);
-
-                        var body = new OpcUaNodeBrowseStructuralBody
-                        {
-                            Name = reference.BrowseName.Name,
-                            NodeID = reference,
-                            Icon = await GetIcon(iconName),
-                            IconKey = iconName,
-                            Count = childRefs.Count > 0 ? $"( {childRefs.Count} )" : string.Empty
-                        };
-                        if (childRefs.Count > 0)
-                            body.Children.Add(new());
-                        await Application.Current.Dispatcher.InvokeAsync(() =>
-                        {
-                            if (parent == null)
-                                Node.Add(body);
-                            else
-                                parent.Children.Add(body);
-                        });
-                    }
+                        Name = reference.BrowseName.Name,
+                        NodeID = reference,
+                        Icon = await GetIcon(iconName),
+                        IconKey = iconName,
+                        Count = childRefs.Count > 0 ? $"( {childRefs.Count} )" : string.Empty
+                    };
+                    if (childRefs.Count > 0)
+                        body.Children.Add(new());
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        if (parent == null)
+                            Node.Add(body);
+                        else
+                            parent.Children.Add(body);
+                    });
                 }
             }
             catch (Exception ex)
@@ -556,11 +546,11 @@ namespace Snet.Iot.Debug.viewModel
             nodeJson ??= new NodeBody();
             NodeId nodeId = (NodeId)refDesc.NodeId;
 
-            var values = Daq.DetailedReadAllNodeData(new List<NodeId> { nodeId }).GetSource<DataValue[]>();
+            DataValue[] values = await Daq.DetailedReadAllNodeDataAsync([nodeId], browseToken.Token);
 
-            nodeJson.DataType = Daq.GetNodeValueType(nodeId).GetSource<BuiltInType>().ToString();
-            nodeJson.Name = values[3]?.ToString();
-            nodeJson.Description = values[4]?.ToString();
+            nodeJson.DataType = (await Daq.GetNodeValueTypeAsync(nodeId, browseToken.Token)).GetSource<BuiltInType>().ToString();
+            nodeJson.Name = values[3].WrappedValue.AsBoxedObject()?.ToString();
+            nodeJson.Description = values[4].WrappedValue.AsBoxedObject()?.ToString();
 
             if (node.Children.Count > 0)
             {
