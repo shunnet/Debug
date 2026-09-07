@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Input;
 using Snet.Core.handler;
 using Snet.Model.data;
 using Snet.Model.@enum;
@@ -229,6 +229,8 @@ namespace Snet.Iot.Debug.template
         {
             try
             {
+                // 退订静态语言事件，避免关闭 Tab 后 ViewModel 被静态事件持有（泄漏）
+                Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
                 IDisposable? sisposable = MqService.GetSource<IDisposable>();
                 if (sisposable != null)
                 {
@@ -245,6 +247,8 @@ namespace Snet.Iot.Debug.template
         {
             try
             {
+                // 退订静态语言事件，避免关闭 Tab 后 ViewModel 被静态事件持有（泄漏）
+                Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
                 IAsyncDisposable? asyncDisposable = MqService.GetSource<IAsyncDisposable>();
                 if (asyncDisposable != null)
                 {

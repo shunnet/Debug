@@ -1,4 +1,4 @@
-﻿using Snet.Utility;
+using Snet.Utility;
 using Snet.Windows.Core.handler;
 using Snet.Windows.Core.mvvm;
 using System.Collections.ObjectModel;
@@ -10,7 +10,7 @@ namespace Snet.Iot.Debug.model
     /// <summary>
     /// OPC UA 节点浏览结构体，用于树形结构展示节点信息并支持分页加载。
     /// </summary>
-    public class OpcUaNodeBrowseStructuralBody : BindNotify
+    public class OpcUaNodeBrowseStructuralBody : BindNotify, IDisposable
     {
 
         /// <summary>
@@ -82,10 +82,36 @@ namespace Snet.Iot.Debug.model
             {
                 if (!IconKey.IsNullOrWhiteSpace())
                 {
-                    Icon = (DrawingImage)Application.Current.FindResource(IconKey);
+                    try
+                    {
+                        Icon = (DrawingImage)Application.Current.FindResource(IconKey);
+                    }
+                    catch
+                    {
+                        // 资源不存在时保留当前图标，避免皮肤切换触发异常
+                    }
                 }
             }, System.Windows.Threading.DispatcherPriority.Background);
             return Task.CompletedTask;
+        }
+
+        private bool disposed;
+
+        /// <summary>
+        /// 释放节点：退订静态皮肤事件并递归释放子节点。<br/>
+        /// 注意：SkinHandler.OnSkinEventAsync 是静态事件，每个节点的订阅都必须显式退订，
+        /// 否则节点被清空后仍被静态事件持有（内存泄漏，且每次皮肤切换会唤醒全部陈旧节点）。
+        /// </summary>
+        public void Dispose()
+        {
+            if (disposed) return;
+            disposed = true;
+            SkinHandler.OnSkinEventAsync -= SkinHandler_OnSkinEventAsync;
+            foreach (var child in Children)
+            {
+                child?.Dispose();
+            }
+            Children.Clear();
         }
     }
 }

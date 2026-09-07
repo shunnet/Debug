@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Snet.Core.handler;
 using Snet.Iot.Debug.view;
 using Snet.Log;
@@ -39,9 +39,11 @@ namespace Snet.Iot.Debug
         public static readonly string dialogHostTag = "DialogHost";
 
         /// <summary>
-        /// 缓存参数对话框
+        /// 缓存参数对话框<br/>
+        /// 惰性属性：服务在 OnStartup 中 AddService 之后才注册，静态字段初始化会提前执行，
+        /// 一旦有代码在 OnStartup 之前触碰 App 静态成员即触发 TypeInitializationException。
         /// </summary>
-        public static readonly PropertyControl param = InjectionWpf.GetService<PropertyControl>();
+        public static PropertyControl? param => InjectionWpf.GetService<PropertyControl>();
 
         /// <summary>
         /// 信息框模型集合

@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Input;
 using Snet.Core.communication.net.core;
 using Snet.Core.communication.net.@enum;
 using Snet.Core.communication.net.tcp.service;
@@ -269,6 +269,7 @@ namespace Snet.Iot.Debug.viewModel
                 else
                 {
                     await uiMessage_InfoEvent.ShowAsync($"“{Data}”{App.LanguageOperate.GetLanguageValue("不是有效的 Hex 数据")}");
+                    return;
                 }
             }
 
@@ -438,6 +439,8 @@ namespace Snet.Iot.Debug.viewModel
         {
             try
             {
+                // 退订静态语言事件，避免关闭 Tab 后 ViewModel 被静态事件持有（泄漏）
+                Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
                 communication?.Dispose();
             }
             catch { }
@@ -447,6 +450,8 @@ namespace Snet.Iot.Debug.viewModel
         {
             try
             {
+                // 退订静态语言事件，避免关闭 Tab 后 ViewModel 被静态事件持有（泄漏）
+                Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
                 if (communication != null)
                 {
                     await communication.DisposeAsync();

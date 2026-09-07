@@ -503,6 +503,9 @@
   <data name="转换失败" xml:space="preserve">
     <value>转换失败</value>
   </data>
+  <data name="地址不能为空" xml:space="preserve">
+    <value>地址不能为空</value>
+  </data>
   <data name="数据不能为空" xml:space="preserve">
     <value>数据不能为空</value>
   </data>

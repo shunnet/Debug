@@ -1,4 +1,4 @@
-﻿using Snet.Core.handler;
+using Snet.Core.handler;
 using Snet.Utility;
 using Snet.Windows.Core.mvvm;
 using System.Windows.Controls;
@@ -53,6 +53,8 @@ namespace Snet.Iot.Debug.model
         /// </summary>
         public void Dispose()
         {
+            // 退订静态语言事件，避免关闭 Tab 后本模型被静态事件持有（泄漏）
+            Core.handler.LanguageHandler.OnLanguageEvent -= LanguageHandler_OnLanguageEvent;
             IDisposable? sisposable = Content.DataContext.GetSource<IDisposable>();
             if (sisposable != null)
             {
@@ -65,6 +67,8 @@ namespace Snet.Iot.Debug.model
         /// <returns></returns>
         public async ValueTask DisposeAsync()
         {
+            // 退订静态语言事件，避免关闭 Tab 后本模型被静态事件持有（泄漏）
+            Core.handler.LanguageHandler.OnLanguageEvent -= LanguageHandler_OnLanguageEvent;
             IAsyncDisposable? asyncDisposable = Content.DataContext.GetSource<IAsyncDisposable>();
             if (asyncDisposable != null)
             {

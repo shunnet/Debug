@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Input;
 using ScottPlot.WPF;
 using Snet.AllenBradley;
 using Snet.Beckhoff;
@@ -330,6 +330,11 @@ namespace Snet.Iot.Debug.viewModel
         IAsyncRelayCommand p_Read;
         public async Task ReadAsync()
         {
+            if (Address.IsNullOrWhiteSpace())
+            {
+                await uiMessage_InfoEvent.ShowAsync(App.LanguageOperate.GetLanguageValue("地址不能为空"));
+                return;
+            }
             Address address = OrganizationAddress();
             OperateResult result = await daq.ReadAsync(address);
             await uiMessage_InfoEvent.ShowAsync(result.Message);
@@ -347,6 +352,11 @@ namespace Snet.Iot.Debug.viewModel
         IAsyncRelayCommand p_Write;
         public async Task WriteAsync()
         {
+            if (Address.IsNullOrWhiteSpace())
+            {
+                await uiMessage_InfoEvent.ShowAsync(App.LanguageOperate.GetLanguageValue("地址不能为空"));
+                return;
+            }
             ConcurrentDictionary<string, WriteModel> pairs = new ConcurrentDictionary<string, WriteModel>();
             EncodingType encoding = (EncodingType)Enum.Parse(typeof(EncodingType), ComboBoxSelectedItem.Key);
             Model.@enum.DataType dataType = (Model.@enum.DataType)DataType;
@@ -364,6 +374,11 @@ namespace Snet.Iot.Debug.viewModel
         IAsyncRelayCommand p_Subscribe;
         public async Task SubscribeAsync()
         {
+            if (Address.IsNullOrWhiteSpace())
+            {
+                await uiMessage_InfoEvent.ShowAsync(App.LanguageOperate.GetLanguageValue("地址不能为空"));
+                return;
+            }
             OperateResult result = await daq.SubscribeAsync(OrganizationAddress());
             await uiMessage_InfoEvent.ShowAsync(result.Message);
 
@@ -378,6 +393,11 @@ namespace Snet.Iot.Debug.viewModel
         IAsyncRelayCommand p_UnSubscribe;
         public async Task UnSubscribeAsync()
         {
+            if (Address.IsNullOrWhiteSpace())
+            {
+                await uiMessage_InfoEvent.ShowAsync(App.LanguageOperate.GetLanguageValue("地址不能为空"));
+                return;
+            }
             OperateResult result = await daq.UnSubscribeAsync(OrganizationAddress());
             await uiMessage_InfoEvent.ShowAsync(result.Message);
 
@@ -881,6 +901,8 @@ namespace Snet.Iot.Debug.viewModel
         {
             try
             {
+                // 退订静态语言事件，避免关闭 Tab 后 ViewModel 被静态事件持有（泄漏）
+                Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
                 daq?.Dispose();
             }
             catch { }
@@ -890,9 +912,17 @@ namespace Snet.Iot.Debug.viewModel
         {
             try
             {
+                // 退订静态语言事件，避免关闭 Tab 后 ViewModel 被静态事件持有（泄漏）
+                Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
                 if (daq != null)
                 {
                     await daq.DisposeAsync();
+                }
+                // 释放图表实例（CoreUnify 静态单例表持有，不释放会累积并触发 255 上限）
+                if (chartOperate != null)
+                {
+                    chartOperate.Off();
+                    await chartOperate.DisposeAsync();
                 }
             }
             catch { }

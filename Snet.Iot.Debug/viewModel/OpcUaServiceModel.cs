@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Input;
 using Opc.Ua;
 using Snet.Core.handler;
 using Snet.Model.data;
@@ -414,7 +414,11 @@ namespace Snet.Iot.Debug.viewModel
                         return;
                     System.Windows.Application.Current.Dispatcher.Invoke(delegate ()
                     {
-                        ComboBoxModel comboBox = new ComboBoxModel($"{ComboBoxSelectedItem.Key}.{FolderName}", operateResult.ResultData);
+                        // 首次创建（无选中父级）时 ComboBoxSelectedItem 为 null，键直接取 FolderName
+                        string folderKey = ComboBoxSelectedItem is null
+                            ? FolderName
+                            : $"{ComboBoxSelectedItem.Key}.{FolderName}";
+                        ComboBoxModel comboBox = new ComboBoxModel(folderKey, operateResult.ResultData);
                         ComboBoxItemsSource.Add(comboBox);
                         ComboBoxSelectedItem = comboBox;
                     });
@@ -489,9 +493,9 @@ namespace Snet.Iot.Debug.viewModel
             DeviceStatusFlashing = (await Communication.GetStatusAsync()).Status;
             TabSelectedIndex = 1;
 
-            if (ComboBoxSelectedItem?.Value == null)
+            if (ComboBoxSelectedItem == null || ComboBoxSelectedItem?.Value == null)
             {
-                await uiMessage_InfoEvent.ShowAsync($"[ {ComboBoxSelectedItem.Key} ] {App.LanguageOperate.GetLanguageValue("不允许移除")}");
+                await uiMessage_InfoEvent.ShowAsync(App.LanguageOperate.GetLanguageValue("不允许移除"));
                 return;
             }
             OperateResult operateResult = Communication.RemoveFolder(new List<NodeId> { ((FolderState)ComboBoxSelectedItem?.Value).NodeId });
@@ -502,7 +506,8 @@ namespace Snet.Iot.Debug.viewModel
                 {
                     ComboBoxItemsSource.Remove(item);
                 }
-                ComboBoxSelectedItem = ComboBoxItemsSource[ComboBoxItemsSource.Count() - 1];
+                // 移除最后一个/全部文件夹后集合可能为空，避免索引越界
+                ComboBoxSelectedItem = ComboBoxItemsSource.Count > 0 ? ComboBoxItemsSource[ComboBoxItemsSource.Count() - 1] : null;
                 await uiMessage_InfoEvent.ShowAsync($"[ {FolderName} ] {App.LanguageOperate.GetLanguageValue("父级移除成功")}");
             }
             else

@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Input;
 using Snet.Iot.Debug.handler;
 using Snet.Iot.Debug.view;
 using Snet.Iot.Debug.viewModel;
@@ -59,6 +59,10 @@ namespace Snet.Iot.Debug
             }
             if (App.tabDeviceModel != null)
             {
+                if (view.SelectedItem == null)
+                {
+                    return; // 选择被清空（如导航重建）时无目标项
+                }
                 if (view.SelectedItem.TargetPageTag == "关于")
                 {
                     App.tabDeviceModel.SetSelected(view.SelectedItem.TargetPageTag, InjectionWpf.GetService<About>());
@@ -113,7 +117,8 @@ namespace Snet.Iot.Debug
                         case "通信服务端":
                             CommunicationService communicationService = InjectionWpf.GetService<CommunicationService>();
                             CommunicationServiceModel communicationServiceModel = communicationService.DataContext.GetSource<CommunicationServiceModel>();
-                            communicationServiceModel.SetObjectAsync(sTag);
+                            // 必须等待 SetObjectAsync（初始化 communication 对象），否则用户可先点"打开"导致 NRE
+                            await communicationServiceModel.SetObjectAsync(sTag);
                             App.tabDeviceModel.AddDevice(sTag, communicationService);
                             break;
                         case "工具":

@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Input;
 using MaterialDesignThemes.Wpf;
 using Newtonsoft.Json;
 using Opc.Ua;
@@ -194,7 +194,15 @@ namespace Snet.Iot.Debug.viewModel
             browseToken?.Cancel();
             browseToken?.Dispose();
             browseToken = null;
-            Node?.Clear();
+            // 释放节点树：每个节点订阅了静态皮肤事件，必须显式退订
+            if (Node != null)
+            {
+                foreach (var node in Node)
+                {
+                    node?.Dispose();
+                }
+                Node.Clear();
+            }
             NodeMessage?.Clear();
             Daq = null;
         }
@@ -342,9 +350,22 @@ namespace Snet.Iot.Debug.viewModel
             // 已缓存
             if (_iconCache.TryGetValue(iconKey, out var cached))
                 return cached;
-            else
-                _iconCache[iconKey] = Application.Current.FindResource(iconKey).GetSource<DrawingImage>();
-            return _iconCache[iconKey];
+
+            // 资源不存在/类型不符时回退默认图标，避免首次加载节点即抛 ResourceReferenceKeyNotFoundException
+            try
+            {
+                DrawingImage? icon = Application.Current.FindResource(iconKey) as DrawingImage
+                    ?? Application.Current.FindResource(defaultKey) as DrawingImage;
+                _iconCache[iconKey] = icon;
+                return icon;
+            }
+            catch
+            {
+                DrawingImage? fallback = Application.Current.FindResource(defaultKey) as DrawingImage;
+                _iconCache[defaultKey] = fallback;
+                _iconCache[iconKey] = fallback;
+                return fallback;
+            }
         }
 
         public T? FindParent<T>(DependencyObject child) where T : DependencyObject

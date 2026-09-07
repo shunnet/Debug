@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Input;
 using Snet.Core.handler;
 using Snet.Kafka;
 using Snet.Model.data;
@@ -332,6 +332,8 @@ namespace Snet.Iot.Debug.viewModel
         {
             try
             {
+                // 退订静态语言事件，避免关闭 Tab 后 ViewModel 被静态事件持有（泄漏）
+                Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
                 mq?.Dispose();
             }
             catch { }
@@ -341,6 +343,8 @@ namespace Snet.Iot.Debug.viewModel
         {
             try
             {
+                // 退订静态语言事件，避免关闭 Tab 后 ViewModel 被静态事件持有（泄漏）
+                Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
                 if (mq != null)
                 {
                     await mq.DisposeAsync();

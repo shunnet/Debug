@@ -1,4 +1,4 @@
-﻿using MaterialDesignThemes.Wpf;
+using MaterialDesignThemes.Wpf;
 using ScottPlot;
 using ScottPlot.Plottables;
 using ScottPlot.WPF;
@@ -338,6 +338,9 @@ namespace Snet.Iot.Debug.chart
                 }
 
                 wpfPlot = null;
+
+                // 退订静态皮肤事件：Off() 后 ChartOperate 不应再被静态事件持有（泄漏）
+                SkinHandler.OnSkinEvent -= SkinHandler_OnSkinEvent;
 
                 return EndOperate(true);
             }
