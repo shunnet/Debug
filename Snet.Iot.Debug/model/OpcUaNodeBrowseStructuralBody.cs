@@ -10,7 +10,7 @@ namespace Snet.Iot.Debug.model
     /// <summary>
     /// OPC UA 节点浏览结构体，用于树形结构展示节点信息并支持分页加载。
     /// </summary>
-    public class OpcUaNodeBrowseStructuralBody : BindNotify, IDisposable
+    public sealed class OpcUaNodeBrowseStructuralBody : BindNotify, IDisposable
     {
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace Snet.Iot.Debug.model
         /// <summary>
         /// 节点图片
         /// </summary>
-        public object Icon
+        public object? Icon
         {
             get => GetProperty(() => Icon);
             set => SetProperty(() => Icon, value);
@@ -49,7 +49,7 @@ namespace Snet.Iot.Debug.model
         /// <summary>
         /// 节点对象
         /// </summary>
-        public object NodeID
+        public object? NodeID
         {
             get => GetProperty(() => NodeID);
             set => SetProperty(() => NodeID, value);
@@ -64,6 +64,7 @@ namespace Snet.Iot.Debug.model
             set => SetProperty(() => Count, value);
         }
 
+        /// <summary>当前节点已加载的直接子节点。</summary>
         public ObservableCollection<OpcUaNodeBrowseStructuralBody> Children
         {
             get => GetProperty(() => Children);
@@ -73,26 +74,23 @@ namespace Snet.Iot.Debug.model
         public OpcUaNodeBrowseStructuralBody()
         {
             Children = new ObservableCollection<OpcUaNodeBrowseStructuralBody>();
+            Name = string.Empty;
+            Count = string.Empty;
             SkinHandler.OnSkinEventAsync += SkinHandler_OnSkinEventAsync;
         }
 
-        private Task SkinHandler_OnSkinEventAsync(object? sender, Windows.Core.data.EventSkinResult e)
+        /// <summary>主题变化后在 UI 线程刷新当前节点图标。</summary>
+        private async Task SkinHandler_OnSkinEventAsync(object? sender, Windows.Core.data.EventSkinResult e)
         {
-            Application.Current.Dispatcher.InvokeAsync(() =>
+            Application? application = Application.Current;
+            if (application is null || IconKey.IsNullOrWhiteSpace())
+                return;
+
+            await application.Dispatcher.InvokeAsync(() =>
             {
-                if (!IconKey.IsNullOrWhiteSpace())
-                {
-                    try
-                    {
-                        Icon = (DrawingImage)Application.Current.FindResource(IconKey);
-                    }
-                    catch
-                    {
-                        // 资源不存在时保留当前图标，避免皮肤切换触发异常
-                    }
-                }
+                if (application.TryFindResource(IconKey) is DrawingImage image)
+                    Icon = image;
             }, System.Windows.Threading.DispatcherPriority.Background);
-            return Task.CompletedTask;
         }
 
         private bool disposed;

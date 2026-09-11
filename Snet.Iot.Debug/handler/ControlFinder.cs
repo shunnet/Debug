@@ -6,7 +6,11 @@ namespace Snet.Iot.Debug.handler
 {
     public static class ControlFinder
     {
-        public static T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        /// <summary>深度优先查找第一个指定类型的视觉子元素。</summary>
+        /// <typeparam name="T">要查找的依赖对象类型。</typeparam>
+        /// <param name="parent">搜索根对象。</param>
+        /// <returns>第一个匹配项；不存在时为 <see langword="null"/>。</returns>
+        public static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
         {
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
             {

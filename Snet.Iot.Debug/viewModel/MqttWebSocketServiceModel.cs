@@ -4,7 +4,8 @@ using Snet.Utility;
 using static Snet.Mqtt.service.websocket.MqttWebSocketServiceData;
 namespace Snet.Iot.Debug.viewModel
 {
-    public class MqttWebSocketServiceModel : MqServiceTemplateModel<Basics>
+    /// <summary>MQTT WebSocket 服务调试模型。</summary>
+    public sealed class MqttWebSocketServiceModel : MqServiceTemplateModel<Basics>
     {
         public MqttWebSocketServiceModel()
         {
@@ -14,15 +15,16 @@ namespace Snet.Iot.Debug.viewModel
             MqService = MqttWebSocketServiceOperate.Instance(BasicsData);
             //工具标题
             Key = "MqttWsService";
-            LanguageHandler_OnLanguageEventAsync(null, null);
         }
 
         public override async Task OnAsync()
         {
-            MqttWebSocketServiceOperate Mq = MqService.GetSource<MqttWebSocketServiceOperate>();
-            var mq = (await Mq.CreateInstanceAsync(BasicsData.ToJson(true))).ResultData.GetSource<MqttWebSocketServiceOperate>();
+            await InitializeAsync();
+            MqttWebSocketServiceOperate factory = MqService as MqttWebSocketServiceOperate ?? throw new InvalidOperationException("MQTT WebSocket service has not been initialized.");
+            var creation = await factory.CreateInstanceAsync(BasicsData.ToJson(true));
+            MqttWebSocketServiceOperate mq = creation.ResultData as MqttWebSocketServiceOperate ?? throw new InvalidOperationException(creation.Message ?? "MQTT WebSocket service creation failed.");
             var result = await mq.OnAsync();
-            await uiMessage_InfoEvent.ShowAsync(result.Message);
+            await uiMessage_InfoEvent.ShowAsync(result.Message ?? string.Empty);
             if (result.Status)
             {
                 mq.OnInfoEventAsync -= Mq_OnInfoEventAsync;
@@ -37,9 +39,10 @@ namespace Snet.Iot.Debug.viewModel
 
         public override async Task OffAsync()
         {
-            MqttWebSocketServiceOperate mq = MqService.GetSource<MqttWebSocketServiceOperate>();
+            await InitializeAsync();
+            MqttWebSocketServiceOperate mq = MqService as MqttWebSocketServiceOperate ?? throw new InvalidOperationException("MQTT WebSocket service has not been initialized.");
             var result = await mq.OffAsync();
-            await uiMessage_InfoEvent.ShowAsync(result.Message);
+            await uiMessage_InfoEvent.ShowAsync(result.Message ?? string.Empty);
             if (result.Status)
             {
                 mq.OnInfoEventAsync -= Mq_OnInfoEventAsync;

@@ -26,12 +26,12 @@ namespace Snet.Iot.Debug.handler
                 throw new ArgumentOutOfRangeException(nameof(pageSize), "每页大小必须大于 0。");
 
             // 计算需要跳过的项数
-            int skip = pageIndex * pageSize;
+            long skip = (long)pageIndex * pageSize;
 
             // 如果跳过的数量超过集合总数，返回空页
             var items = skip >= source.Count
                 ? new List<ReferenceDescription>()
-                : source.Skip(skip).Take(pageSize).ToList();
+                : source.Skip((int)skip).Take(pageSize).ToList();
             // 构造分页结果对象
             return new PagedResult<ReferenceDescription>
             {

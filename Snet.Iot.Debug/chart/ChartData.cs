@@ -177,6 +177,12 @@ namespace Snet.Iot.Debug.chart
             /// <param name="v">值</param>
             public void Update(double v)
             {
+                if (!plot.Dispatcher.CheckAccess())
+                {
+                    plot.Dispatcher.Invoke(() => Update(v));
+                    return;
+                }
+
                 bool hasMax = !double.IsNaN(model.MaxValue);
                 bool hasMin = !double.IsNaN(model.MinValue);
 
@@ -219,6 +225,12 @@ namespace Snet.Iot.Debug.chart
             /// </summary>
             public void Clear()
             {
+                if (!plot.Dispatcher.CheckAccess())
+                {
+                    plot.Dispatcher.Invoke(Clear);
+                    return;
+                }
+
                 data.Clear();
                 sinceRebuild = 0;
                 logger.Data.Clear();
@@ -231,6 +243,11 @@ namespace Snet.Iot.Debug.chart
             /// <returns></returns>
             public (double[] Ys, double[] Xs) Get()
             {
+                if (!plot.Dispatcher.CheckAccess())
+                {
+                    return plot.Dispatcher.Invoke(Get);
+                }
+
                 if (data.Count > 0)
                 {
                     double[] ys = data.ToArray();

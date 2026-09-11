@@ -26,12 +26,13 @@ namespace Snet.Iot.Debug.viewModel
         /// 对象
         /// 外部设置好传进来
         /// </summary>
-        private ICommunicationService communication;
+        private ICommunicationService? communication;
 
         /// <summary>
         /// 标识符
         /// </summary>
-        private string tag;
+        private string tag = string.Empty;
+        private int disposed;
 
         /// <summary>
         /// ui信息处理器
@@ -154,7 +155,7 @@ namespace Snet.Iot.Debug.viewModel
         /// <summary>
         /// 选中的行数据
         /// </summary>
-        public DataGridStructuralBody DataGridSelectionItem = new DataGridStructuralBody();
+        public DataGridStructuralBody? DataGridSelectionItem = new DataGridStructuralBody();
 
         /// <summary>
         /// DataGrid结构体
@@ -176,7 +177,7 @@ namespace Snet.Iot.Debug.viewModel
             /// <summary>
             /// 地址与端口
             /// </summary>
-            public string IPENDPORT { get; set; }
+            public string IPENDPORT { get; set; } = string.Empty;
         }
         #endregion
 
@@ -186,14 +187,14 @@ namespace Snet.Iot.Debug.viewModel
         /// 表格数据选中触发
         /// </summary>
         public IAsyncRelayCommand GridDataSelectionChanged => p_GridDataSelectionChanged ??= new AsyncRelayCommand<SelectionChangedEventArgs>(GridDataSelectionChangedAsync);
-        IAsyncRelayCommand p_GridDataSelectionChanged;
+        IAsyncRelayCommand? p_GridDataSelectionChanged;
         /// <summary>
         /// 触发事件
         /// </summary>
         /// <param name="e"></param>
         private Task GridDataSelectionChangedAsync(SelectionChangedEventArgs? e)
         {
-            DataGridSelectionItem = e.Source.GetSource<DataGrid>().SelectedItem.GetSource<DataGridStructuralBody>();
+            DataGridSelectionItem = (e?.Source as DataGrid)?.SelectedItem as DataGridStructuralBody;
             return Task.CompletedTask;
         }
 
@@ -201,20 +202,21 @@ namespace Snet.Iot.Debug.viewModel
         /// 打开
         /// </summary>
         public IAsyncRelayCommand On => p_On ??= new AsyncRelayCommand(OnAsync);
-        IAsyncRelayCommand p_On;
+        IAsyncRelayCommand? p_On;
         public async Task OnAsync()
         {
-            var result = await communication.OnAsync();
-            await uiMessage_InfoEvent.ShowAsync(result.Message);
+            ICommunicationService instance = communication ?? throw new InvalidOperationException("Communication service has not been initialized.");
+            var result = await instance.OnAsync();
+            await uiMessage_InfoEvent.ShowAsync(result.Message ?? string.Empty);
             if (result.Status)
             {
-                communication.OnInfoEventAsync -= Communication_OnInfoEventAsync;
-                communication.OnInfoEventAsync += Communication_OnInfoEventAsync;
-                communication.OnDataEventAsync -= Communication_OnDataEventAsync;
-                communication.OnDataEventAsync += Communication_OnDataEventAsync;
+                instance.OnInfoEventAsync -= Communication_OnInfoEventAsync;
+                instance.OnInfoEventAsync += Communication_OnInfoEventAsync;
+                instance.OnDataEventAsync -= Communication_OnDataEventAsync;
+                instance.OnDataEventAsync += Communication_OnDataEventAsync;
             }
 
-            DeviceStatusFlashing = (await communication.GetStatusAsync()).Status;
+            DeviceStatusFlashing = (await instance.GetStatusAsync()).Status;
             TabSelectedIndex = 1;
         }
 
@@ -222,7 +224,7 @@ namespace Snet.Iot.Debug.viewModel
         /// 关闭
         /// </summary>
         public IAsyncRelayCommand Off => p_Off ??= new AsyncRelayCommand(OffAsync);
-        IAsyncRelayCommand p_Off;
+        IAsyncRelayCommand? p_Off;
         public async Task OffAsync()
         {
             if (communication == null)
@@ -230,7 +232,7 @@ namespace Snet.Iot.Debug.viewModel
                 return;  // 未启动，无需关闭
             }
             var result = await communication.OffAsync();
-            await uiMessage_InfoEvent.ShowAsync(result.Message);
+            await uiMessage_InfoEvent.ShowAsync(result.Message ?? string.Empty);
             if (result.Status)
             {
                 communication.OnInfoEventAsync -= Communication_OnInfoEventAsync;
@@ -246,52 +248,54 @@ namespace Snet.Iot.Debug.viewModel
         /// 发送
         /// </summary>
         public IAsyncRelayCommand Send => p_Send ??= new AsyncRelayCommand(SendAsync);
-        IAsyncRelayCommand p_Send;
+        IAsyncRelayCommand? p_Send;
         public async Task SendAsync()
         {
-            if (Data.IsNullOrWhiteSpace())
+            string data = Data ?? string.Empty;
+            if (data.IsNullOrWhiteSpace())
             {
-                await uiMessage_InfoEvent.ShowAsync(App.LanguageOperate.GetLanguageValue("数据不能为空"));
+                await uiMessage_InfoEvent.ShowAsync(App.LanguageOperate.GetLanguageValue("数据不能为空") ?? "数据不能为空");
                 return;
             }
             //发送的数据
-            byte[] sendData = null;
+            byte[] sendData;
             if (DataFormat.Equals(0))
             {
-                sendData = Encoding.ASCII.GetBytes(Data);
+                sendData = Encoding.ASCII.GetBytes(data);
             }
             else
             {
-                if (Data.IsHexadecimal())
+                if (data.IsHexadecimal())
                 {
-                    sendData = Data.ToHex(false);
+                    sendData = data.ToHex(false);
                 }
                 else
                 {
-                    await uiMessage_InfoEvent.ShowAsync($"“{Data}”{App.LanguageOperate.GetLanguageValue("不是有效的 Hex 数据")}");
+                    await uiMessage_InfoEvent.ShowAsync($"“{Data}”{App.LanguageOperate.GetLanguageValue("不是有效的 Hex 数据") ?? "不是有效的 Hex 数据"}");
                     return;
                 }
             }
 
+            ICommunicationService instance = communication ?? throw new InvalidOperationException("Communication service has not been initialized.");
             if (MassSend)
             {
-                OperateResult result = await communication.SendAsync(sendData);
+                OperateResult result = await instance.SendAsync(sendData);
                 await uiMessage_InfoEvent.ShowAsync(result.ToJson(true));
             }
             else
             {
                 if (DataGridSelectionItem != null && !string.IsNullOrEmpty(DataGridSelectionItem.IPENDPORT))
                 {
-                    OperateResult operateResult = await communication.SendAsync(sendData, DataGridSelectionItem.IPENDPORT);
+                    OperateResult operateResult = await instance.SendAsync(sendData, DataGridSelectionItem.IPENDPORT);
                     await uiMessage_InfoEvent.ShowAsync(operateResult.ToJson(true));
                 }
                 else
                 {
-                    await uiMessage_InfoEvent.ShowAsync(App.LanguageOperate.GetLanguageValue("请选择一个已连接的客户端"));
+                    await uiMessage_InfoEvent.ShowAsync(App.LanguageOperate.GetLanguageValue("请选择一个已连接的客户端") ?? "请选择一个已连接的客户端");
                 }
             }
 
-            DeviceStatusFlashing = (await communication.GetStatusAsync()).Status;
+            DeviceStatusFlashing = (await instance.GetStatusAsync()).Status;
             TabSelectedIndex = 1;
         }
 
@@ -299,7 +303,7 @@ namespace Snet.Iot.Debug.viewModel
         /// 信息清空
         /// </summary>
         public IAsyncRelayCommand InfoClear => p_InfoClear ??= new AsyncRelayCommand(InfoClearAsync);
-        IAsyncRelayCommand p_InfoClear;
+        IAsyncRelayCommand? p_InfoClear;
         public async Task InfoClearAsync()
         {
             await uiMessage_InfoEvent.ClearAsync();
@@ -309,7 +313,7 @@ namespace Snet.Iot.Debug.viewModel
         /// 数据清空
         /// </summary>
         public IAsyncRelayCommand DataClear => p_DataClear ??= new AsyncRelayCommand(DataClearAsync);
-        IAsyncRelayCommand p_DataClear;
+        IAsyncRelayCommand? p_DataClear;
         public async Task DataClearAsync()
         {
             await uiMessage_DataEvent.ClearAsync();
@@ -319,7 +323,7 @@ namespace Snet.Iot.Debug.viewModel
         #region 事件
         private async Task Communication_OnDataEventAsync(object? sender, EventDataResult e)
         {
-            await uiMessage_DataEvent.ShowAsync(e.Message.Replace("[", "[ ").Replace("]", " ] "));
+            await uiMessage_DataEvent.ShowAsync((e.Message ?? string.Empty).Replace("[", "[ ").Replace("]", " ] "));
 
             ClientMessage? message = e.GetSource<ClientMessage>();
             if (message == null)
@@ -388,16 +392,16 @@ namespace Snet.Iot.Debug.viewModel
             await LanguageHandler_OnLanguageEventAsync(null, null);
 
             // 界面消息处理
-            uiMessage_DataEvent.OnInfoEventAsync += async (object? sender, Model.data.EventInfoResult e) => DataEvent = e.Message;
+            uiMessage_DataEvent.OnInfoEventAsync += (object? sender, Model.data.EventInfoResult e) => { DataEvent = e.Message ?? string.Empty; return Task.CompletedTask; };
             await uiMessage_DataEvent.StartAsync();
-            uiMessage_InfoEvent.OnInfoEventAsync += async (object? sender, Model.data.EventInfoResult e) => InfoEvent = e.Message;
+            uiMessage_InfoEvent.OnInfoEventAsync += (object? sender, Model.data.EventInfoResult e) => { InfoEvent = e.Message ?? string.Empty; return Task.CompletedTask; };
             await uiMessage_InfoEvent.StartAsync();
 
             Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
             Core.handler.LanguageHandler.OnLanguageEventAsync += LanguageHandler_OnLanguageEventAsync;
         }
 
-        private async Task LanguageHandler_OnLanguageEventAsync(object? sender, EventLanguageResult e)
+        private async Task LanguageHandler_OnLanguageEventAsync(object? sender, EventLanguageResult? e)
         {
             string title = (await Core.handler.LanguageHandler.GetLanguageAsync()) == LanguageType.zh ? " 调试工具" : " Debug Tool";
             ToolTitle = (await App.LanguageOperate.GetLanguageValueAsync(tag)) + title;
@@ -437,27 +441,22 @@ namespace Snet.Iot.Debug.viewModel
         }
         public void Dispose()
         {
-            try
-            {
-                // 退订静态语言事件，避免关闭 Tab 后 ViewModel 被静态事件持有（泄漏）
-                Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
-                communication?.Dispose();
-            }
-            catch { }
+            if (Interlocked.Exchange(ref disposed, 1) != 0) return;
+            Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
+            communication?.Dispose();
+            uiMessage_DataEvent.Dispose();
+            uiMessage_InfoEvent.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         public async ValueTask DisposeAsync()
         {
-            try
-            {
-                // 退订静态语言事件，避免关闭 Tab 后 ViewModel 被静态事件持有（泄漏）
-                Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
-                if (communication != null)
-                {
-                    await communication.DisposeAsync();
-                }
-            }
-            catch { }
+            if (Interlocked.Exchange(ref disposed, 1) != 0) return;
+            Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
+            if (communication != null) await communication.DisposeAsync();
+            await uiMessage_DataEvent.DisposeAsync();
+            await uiMessage_InfoEvent.DisposeAsync();
+            GC.SuppressFinalize(this);
         }
         #endregion
     }

@@ -31,7 +31,7 @@ namespace Snet.Iot.Debug.chart
     /// 支持在一个图表中添加多个动态的实时曲线<br/>
     /// 支持加载历史数据
     /// </summary>
-    public class ChartOperate : CoreUnify<ChartOperate, ChartData.Basics>, IDisposable, IAsyncDisposable
+    public sealed class ChartOperate : CoreUnify<ChartOperate, ChartData.Basics>, IDisposable, IAsyncDisposable
     {
         /// <summary>
         /// 有参构造函数<br/>
@@ -66,12 +66,26 @@ namespace Snet.Iot.Debug.chart
         {
             Off();
             base.Dispose();
+            GC.SuppressFinalize(this);
         }
         /// <inheritdoc/>
         public override async ValueTask DisposeAsync()
         {
+            Task? refreshTask = AutoRefreshTask;
             Off();
+            if (refreshTask is not null)
+            {
+                try
+                {
+                    await refreshTask;
+                }
+                catch (OperationCanceledException)
+                {
+                    // 释放触发的正常取消。
+                }
+            }
             await base.DisposeAsync();
+            GC.SuppressFinalize(this);
         }
         #endregion
 
@@ -80,7 +94,7 @@ namespace Snet.Iot.Debug.chart
         /// 注意：对 WpfPlot 的大部分操作必须在 UI 线程执行。<br/>
         /// 如果外部可能从非 UI 线程调用本类方法，建议在调用处或在内部使用 Dispatcher.Invoke/BeginInvoke。
         /// </summary>
-        private WpfPlot wpfPlot;
+        private WpfPlot? wpfPlot;
 
         /// <summary>
         /// 黑夜模式样式缓存（Lazy 延迟创建）<br/>
@@ -123,16 +137,12 @@ namespace Snet.Iot.Debug.chart
         /// 自动刷新的 CancellationTokenSource（在 Off/Dispose 时释放）
         /// </summary>
         private CancellationTokenSource? AutoRefreshTokenSource;
-        /// <summary>
-        /// 自动刷新状态标识<br/>
-        /// 仅用于避免重复启动刷新循环。
-        /// </summary>
-        private volatile bool AutoRefreshStatus = false;
-
+        /// <summary>当前自动刷新循环；释放时必须等待它终止。</summary>
+        private Task? AutoRefreshTask;
         /// <summary>
         /// 十字线
         /// </summary>
-        private ScottPlot.Plottables.Crosshair CH;
+        private ScottPlot.Plottables.Crosshair? CH;
 
         /// <summary>
         /// 自动刷新循环<br/>
@@ -143,39 +153,28 @@ namespace Snet.Iot.Debug.chart
         /// 4. 在 Cancel 时 Dispose TokenSource，避免资源泄漏。<br/>
         /// 注意：此方法会在内部启动一个后台任务；如果外部已经在 UI 线程周期性刷新，则可不启用。<br/>
         /// </summary>
-        private async Task AutoRefreshAsync(CancellationToken token, int millisecond)
+        private static async Task AutoRefreshAsync(WpfPlot plot, int millisecond, CancellationToken token)
         {
             if (millisecond == 0)
                 return;
-
-            // 防止并发调用同时启动多个循环
-            if (AutoRefreshStatus)
-                return;
-
-            AutoRefreshStatus = true;
 
             try
             {
                 while (!token.IsCancellationRequested)
                 {
                     // 避免每次都枚举完整集合，Any() 在 IEnumerable 上能尽早返回
-                    if (wpfPlot?.Plot?.GetPlottables()?.Any() == true)
+                    if (plot.Plot.GetPlottables().Any())
                     {
                         // Refresh 必须在 UI 线程
-                        wpfPlot.Dispatcher.Invoke(() => wpfPlot.Refresh());
+                        await plot.Dispatcher.InvokeAsync(plot.Refresh, System.Windows.Threading.DispatcherPriority.Background, token);
                     }
 
                     await Task.Delay(millisecond, token).ConfigureAwait(false);
                 }
             }
-            catch (TaskCanceledException) { }
-            catch (OperationCanceledException) { }
-            finally
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
             {
-                AutoRefreshStatus = false;
-                // 在外部取消后尽量释放 CTS
-                try { AutoRefreshTokenSource?.Dispose(); } catch { }
-                AutoRefreshTokenSource = null;
+                // 调用方取消刷新时正常结束。
             }
         }
 
@@ -253,7 +252,7 @@ namespace Snet.Iot.Debug.chart
             {
                 AutoRefreshTokenSource = new CancellationTokenSource();
                 // 不在 UI 线程等待 AutoRefreshAsync 完成；让其后台运行
-                _ = AutoRefreshAsync(AutoRefreshTokenSource.Token, basics.RefreshTime);
+                AutoRefreshTask = AutoRefreshAsync(wpfPlot, basics.RefreshTime, AutoRefreshTokenSource.Token);
             }
         }
         /// <summary>
@@ -261,9 +260,14 @@ namespace Snet.Iot.Debug.chart
         /// </summary>
         private void WpfPlot_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            Point p = e.GetPosition(wpfPlot);
-            ScottPlot.Pixel mousePixel = new(p.X * wpfPlot.DisplayScale, p.Y * wpfPlot.DisplayScale);
-            ScottPlot.Coordinates coordinates = wpfPlot.Plot.GetCoordinates(mousePixel);
+            WpfPlot? plot = wpfPlot;
+            if (plot is null || CH is null)
+            {
+                return;
+            }
+            Point p = e.GetPosition(plot);
+            ScottPlot.Pixel mousePixel = new(p.X * plot.DisplayScale, p.Y * plot.DisplayScale);
+            ScottPlot.Coordinates coordinates = plot.Plot.GetCoordinates(mousePixel);
             CH.Position = coordinates;
             if (basics.YCrosshairText)
             {
@@ -273,7 +277,7 @@ namespace Snet.Iot.Debug.chart
             {
                 CH.VerticalLine.Text = $"{coordinates.X:N3}";
             }
-            wpfPlot.Refresh();
+            plot.Refresh();
         }
 
         /// <summary>
@@ -306,34 +310,32 @@ namespace Snet.Iot.Debug.chart
             BegOperate();
             try
             {
-                if (!GetStatus().GetDetails(out string? message))
+                CancellationTokenSource? refreshCancellation = AutoRefreshTokenSource;
+                AutoRefreshTokenSource = null;
+                AutoRefreshTask = null;
+                if (refreshCancellation != null)
                 {
-                    return EndOperate(false, message);
-                }
-
-                if (AutoRefreshTokenSource != null)
-                {
-                    AutoRefreshStatus = false;
-                    try { AutoRefreshTokenSource.Cancel(); } catch { }
-                    try { AutoRefreshTokenSource.Dispose(); } catch { }
-                    AutoRefreshTokenSource = null;
+                    refreshCancellation.Cancel();
+                    refreshCancellation.Dispose();
                 }
 
                 // 清理 DataLogger：调用 Clear 并释放每个 logger（如果需要）
                 foreach (var kv in DataLoggerChartManage)
                 {
-                    try { kv.Value.Clear(); } catch { }
+                    kv.Value.Clear();
                 }
                 DataLoggerChartManage.Clear();
 
                 // 清空所有数据（必须在 UI 线程执行）
                 if (wpfPlot != null)
                 {
-                    wpfPlot.Dispatcher.Invoke(() =>
+                    WpfPlot plot = wpfPlot;
+                    plot.Dispatcher.Invoke(() =>
                     {
-                        try { wpfPlot.Plot.Clear(); } catch { }
-                        try { Reset(wpfPlot.Plot); } catch { }
-                        try { wpfPlot.Plot.PlotControl?.Refresh(); } catch { }
+                        plot.MouseMove -= WpfPlot_MouseMove;
+                        plot.Plot.Clear();
+                        Reset(plot.Plot);
+                        plot.Plot.PlotControl?.Refresh();
                     });
                 }
 
@@ -341,6 +343,7 @@ namespace Snet.Iot.Debug.chart
 
                 // 退订静态皮肤事件：Off() 后 ChartOperate 不应再被静态事件持有（泄漏）
                 SkinHandler.OnSkinEvent -= SkinHandler_OnSkinEvent;
+                OnLanguageEventAsync -= ChartOperate_OnLanguageEventAsync;
 
                 return EndOperate(true);
             }
@@ -403,6 +406,7 @@ namespace Snet.Iot.Debug.chart
             BegOperate();
             try
             {
+                ArgumentNullException.ThrowIfNull(model);
                 if (!GetStatus().GetDetails(out string? message))
                 {
                     return EndOperate(false, message);
@@ -419,13 +423,16 @@ namespace Snet.Iot.Debug.chart
                     return EndOperate(false, LanguageOperate.GetLanguageValue("超过最大实时线条限制，实时线条过多会导致性能大幅度下降"));
                 }
 
-                DataLogger obj = null!;
+                WpfPlot plot = wpfPlot ?? throw new InvalidOperationException("Chart is not running.");
+                DataLogger? obj = null;
 
                 // Add.DataLogger 必须在 UI 线程执行
-                wpfPlot.Dispatcher.Invoke(() =>
+                plot.Dispatcher.Invoke(() =>
                 {
-                    obj = wpfPlot.Plot.Add.DataLogger();
+                    obj = plot.Plot.Add.DataLogger();
                 });
+                if (obj is null)
+                    throw new InvalidOperationException("ScottPlot did not create the data logger.");
 
                 switch (GetLanguage())
                 {
@@ -437,7 +444,7 @@ namespace Snet.Iot.Debug.chart
                         break;
                 }
 
-                obj.Color = model?.Color == null ? wpfPlot.Plot.Add.GetNextColor() : new ScottPlot.Color(model.Color);
+                obj.Color = model.Color == null ? plot.Plot.Add.GetNextColor() : new ScottPlot.Color(model.Color);
                 obj.LineWidth = model.Width;
                 obj.ViewSlide();
 
@@ -445,13 +452,13 @@ namespace Snet.Iot.Debug.chart
                 {
                     model = model,
                     logger = obj,
-                    plot = wpfPlot
+                    plot = plot
                 };
 
                 if (!DataLoggerChartManage.TryAdd(model.SN, source))
                 {
                     // 如果并发情况下插入失败，则移除刚刚创建的 logger（在 UI 线程）并返回失败
-                    wpfPlot.Dispatcher.Invoke(() => wpfPlot.Plot.Remove(obj));
+                    plot.Dispatcher.Invoke(() => plot.Plot.Remove(obj));
                     return EndOperate(false, $"{model.SN}{LanguageOperate.GetLanguageValue("已存在")}");
                 }
 
@@ -691,7 +698,7 @@ namespace Snet.Iot.Debug.chart
         {
             if (wpfPlot == null)
                 return Task.CompletedTask;
-            if (e.GetDetails(out string msg, out LanguageType? language))
+            if (e.GetDetails(out string? msg, out LanguageType? language))
             {
                 foreach (var item in DataLoggerChartManage)
                 {
@@ -735,27 +742,27 @@ namespace Snet.Iot.Debug.chart
                 {
                     plot.Menu?.Clear();
 
-                    plot.Menu?.Add(LanguageOperate.GetLanguageValue("调整"), Adjust);
-                    plot.Menu?.Add(LanguageOperate.GetLanguageValue("重置"), Reset);
+                    plot.Menu?.Add(LanguageOperate.GetLanguageValue("调整") ?? "Adjust", Adjust);
+                    plot.Menu?.Add(LanguageOperate.GetLanguageValue("重置") ?? "Reset", Reset);
                     plot.Menu?.AddSeparator();
-                    plot.Menu?.Add(LanguageOperate.GetLanguageValue("保存图片"), SaveImage);
-                    plot.Menu?.Add(LanguageOperate.GetLanguageValue("复制图片"), CopyImage);
+                    plot.Menu?.Add(LanguageOperate.GetLanguageValue("保存图片") ?? "Save image", SaveImage);
+                    plot.Menu?.Add(LanguageOperate.GetLanguageValue("复制图片") ?? "Copy image", CopyImage);
 
                     if (basics.DataRemove)
                     {
                         plot.Menu?.AddSeparator();
-                        plot.Menu?.Add(App.LanguageOperate.GetLanguageValue("移除数据"), Clear);
+                        plot.Menu?.Add(App.LanguageOperate.GetLanguageValue("移除数据") ?? "Clear data", Clear);
                     }
 
                     if (basics.LineRemove)
                     {
                         plot.Menu?.AddSeparator();
-                        plot.Menu?.Add(LanguageOperate.GetLanguageValue("移除线条"), RemoveLine);
+                        plot.Menu?.Add(LanguageOperate.GetLanguageValue("移除线条") ?? "Remove lines", RemoveLine);
                     }
                     if (basics.LineAdjust)
                     {
                         plot.Menu?.AddSeparator();
-                        plot.Menu?.Add(LanguageOperate.GetLanguageValue("线条操作"), LineOperate);
+                        plot.Menu?.Add(LanguageOperate.GetLanguageValue("线条操作") ?? "Line operations", LineOperate);
                     }
                     return true;
                 }
@@ -800,7 +807,7 @@ namespace Snet.Iot.Debug.chart
                 }
                 catch (ArgumentException)
                 {
-                    MessageBox.Show(LanguageOperate.GetLanguageValue("不支持的图像文件格式"), LanguageOperate.GetLanguageValue("异常"), MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(LanguageOperate.GetLanguageValue("不支持的图像文件格式") ?? "Unsupported image format", LanguageOperate.GetLanguageValue("异常") ?? "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
                 try
@@ -810,7 +817,7 @@ namespace Snet.Iot.Debug.chart
                 }
                 catch (Exception)
                 {
-                    MessageBox.Show(LanguageOperate.GetLanguageValue("图像保存失败"), LanguageOperate.GetLanguageValue("异常"), MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(LanguageOperate.GetLanguageValue("图像保存失败") ?? "Image save failed", LanguageOperate.GetLanguageValue("异常") ?? "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
             }
@@ -872,8 +879,8 @@ namespace Snet.Iot.Debug.chart
             // 重新应用当前皮肤样式，避免样式丢失
             switch (CurrentSkinType)
             {
-                case SkinType.Dark: wpfPlot?.Plot.SetStyle(dark); break;
-                case SkinType.Light: wpfPlot?.Plot.SetStyle(light); break;
+                case SkinType.Dark when dark is not null: plot.SetStyle(dark); break;
+                case SkinType.Light when light is not null: plot.SetStyle(light); break;
             }
             plot.PlotControl?.Refresh();
         }
@@ -892,8 +899,8 @@ namespace Snet.Iot.Debug.chart
             // 重新应用当前皮肤样式，避免样式丢失
             switch (CurrentSkinType)
             {
-                case SkinType.Dark: wpfPlot?.Plot.SetStyle(dark); break;
-                case SkinType.Light: wpfPlot?.Plot.SetStyle(light); break;
+                case SkinType.Dark when dark is not null: plot.SetStyle(dark); break;
+                case SkinType.Light when light is not null: plot.SetStyle(light); break;
             }
             plot.PlotControl?.Refresh();
         }
@@ -904,6 +911,7 @@ namespace Snet.Iot.Debug.chart
         /// </summary>
         private void LineOperate(Plot plot)
         {
+            WpfPlot host = wpfPlot ?? throw new InvalidOperationException("Chart is not running.");
             plot.Legend.ShowItemsFromHiddenPlottables = true;
             plot.Legend.OutlineWidth = 0;
             plot.Legend.BackgroundColor = ScottPlot.Color.FromSDColor(System.Drawing.SystemColors.Control);
@@ -912,18 +920,18 @@ namespace Snet.Iot.Debug.chart
             {
                 legend.IsVisible = false;
             }
-            wpfPlot?.Refresh();
+            host.Refresh();
 
             ChartLine form = new ChartLine()
             {
-                Width = wpfPlot.Plot.Legend.LastRenderSize.Width,
-                Height = wpfPlot.Plot.Legend.LastRenderSize.Height
+                Width = host.Plot.Legend.LastRenderSize.Width,
+                Height = host.Plot.Legend.LastRenderSize.Height
             };
 
             SKElement sKElement = new()
             {
-                Width = wpfPlot.Plot.Legend.LastRenderSize.Width,
-                Height = wpfPlot.Plot.Legend.LastRenderSize.Height
+                Width = host.Plot.Legend.LastRenderSize.Width,
+                Height = host.Plot.Legend.LastRenderSize.Height
             };
             sKElement.PaintSurface += (s, e) => { PaintDetachedLegend((SKElement)s!, e); };
             sKElement.MouseLeftButtonDown += (s, e) => { MouseLeftButtonDown((SKElement)s!, e); };
@@ -933,10 +941,10 @@ namespace Snet.Iot.Debug.chart
             {
                 switch (CurrentSkinType)
                 {
-                    case SkinType.Dark: wpfPlot?.Plot.SetStyle(dark); break;
-                    case SkinType.Light: wpfPlot?.Plot.SetStyle(light); break;
+                    case SkinType.Dark when dark is not null: host.Plot.SetStyle(dark); break;
+                    case SkinType.Light when light is not null: host.Plot.SetStyle(light); break;
                 }
-                wpfPlot?.Refresh();
+                host.Refresh();
                 form.Opacity = 1;
             }
             void Closing(object? sender, DialogClosingEventArgs eventArgs)
@@ -949,10 +957,10 @@ namespace Snet.Iot.Debug.chart
 
                 switch (CurrentSkinType)
                 {
-                    case SkinType.Dark: wpfPlot?.Plot.SetStyle(dark); break;
-                    case SkinType.Light: wpfPlot?.Plot.SetStyle(light); break;
+                    case SkinType.Dark when dark is not null: host.Plot.SetStyle(dark); break;
+                    case SkinType.Light when light is not null: host.Plot.SetStyle(light); break;
                 }
-                wpfPlot?.Refresh();
+                host.Refresh();
             }
 
             DialogHost.Show(form, "DialogHost_ClickClose", Loaded, Closing);
@@ -967,6 +975,8 @@ namespace Snet.Iot.Debug.chart
         /// <param name="e">包含绘制上下文（SKCanvas）的事件参数</param>
         private void PaintDetachedLegend(SKElement sender, SKPaintSurfaceEventArgs e)
         {
+            WpfPlot? host = wpfPlot;
+            if (host is null) return;
             // 获取绘图区域的像素尺寸
             PixelSize size = new(sender.Width, sender.Height);
             PixelRect rect = new(Pixel.Zero, size);
@@ -979,7 +989,7 @@ namespace Snet.Iot.Debug.chart
 
             // 使用图表的 Legend 对象在指定区域绘制图例
             // Alignment.UpperLeft 表示图例绘制在左上角
-            wpfPlot.Plot.Legend.Render(canvas, paint, rect, Alignment.UpperLeft);
+            host.Plot.Legend.Render(canvas, paint, rect, Alignment.UpperLeft);
         }
 
         /// <summary>
@@ -1017,17 +1027,19 @@ namespace Snet.Iot.Debug.chart
         /// <returns>若命中图例项则返回 LegendItem，否则返回 null</returns>
         private LegendItem? GetLegendItemUnderMouse(SKElement sender, System.Windows.Point e)
         {
+            WpfPlot? host = wpfPlot;
+            if (host is null) return null;
             // 计算当前绘图区域的像素大小
             PixelSize size = new(sender.Width, sender.Height);
 
             // 获取图例中的所有项
-            LegendItem[] items = wpfPlot.Plot.Legend.GetItems();
+            LegendItem[] items = host.Plot.Legend.GetItems();
 
             // 创建绘制工具用于布局计算
             using Paint paint = ScottPlot.Paint.NewDisposablePaint();
 
             // 获取图例布局信息（包含每个标签和符号的矩形范围）
-            LegendLayout layout = wpfPlot.Plot.Legend.GetLayout(size, paint);
+            LegendLayout layout = host.Plot.Legend.GetLayout(size, paint);
 
             // 若无图例项则直接返回
             if (items.Length == 0)
@@ -1071,7 +1083,10 @@ namespace Snet.Iot.Debug.chart
                 if (typeface != null && !string.IsNullOrEmpty(typeface.FamilyName))
                     return typeface.FamilyName;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"CJK font detection failed: {ex.Message}");
+            }
 
             // 方案2：逐个尝试已知的 CJK 字体名称（英文名优先，跨环境最稳定）
             string[] fallbackNames = ["Microsoft YaHei UI", "Microsoft YaHei", "SimHei", "Noto Sans SC", "微软雅黑"];

@@ -4,7 +4,8 @@ using Snet.Utility;
 using static Snet.Netty.service.NettyServiceData;
 namespace Snet.Iot.Debug.viewModel
 {
-    public class NettyServiceModel : MqServiceTemplateModel<Basics>
+    /// <summary>Netty 服务调试模型。</summary>
+    public sealed class NettyServiceModel : MqServiceTemplateModel<Basics>
     {
         public NettyServiceModel()
         {
@@ -15,15 +16,16 @@ namespace Snet.Iot.Debug.viewModel
             //工具标题
             Key = "NettyService";
 
-            LanguageHandler_OnLanguageEventAsync(null, null);
         }
 
         public override async Task OnAsync()
         {
-            NettyServiceOperate Mq = MqService.GetSource<NettyServiceOperate>();
-            var mq = (await Mq.CreateInstanceAsync(BasicsData.ToJson(true))).ResultData.GetSource<NettyServiceOperate>();
+            await InitializeAsync();
+            NettyServiceOperate factory = MqService as NettyServiceOperate ?? throw new InvalidOperationException("Netty service has not been initialized.");
+            var creation = await factory.CreateInstanceAsync(BasicsData.ToJson(true));
+            NettyServiceOperate mq = creation.ResultData as NettyServiceOperate ?? throw new InvalidOperationException(creation.Message ?? "Netty service creation failed.");
             var result = await mq.OnAsync();
-            await uiMessage_InfoEvent.ShowAsync(result.Message);
+            await uiMessage_InfoEvent.ShowAsync(result.Message ?? string.Empty);
             if (result.Status)
             {
                 mq.OnInfoEventAsync -= Mq_OnInfoEventAsync;
@@ -38,9 +40,10 @@ namespace Snet.Iot.Debug.viewModel
 
         public override async Task OffAsync()
         {
-            NettyServiceOperate mq = MqService.GetSource<NettyServiceOperate>();
+            await InitializeAsync();
+            NettyServiceOperate mq = MqService as NettyServiceOperate ?? throw new InvalidOperationException("Netty service has not been initialized.");
             var result = await mq.OffAsync();
-            await uiMessage_InfoEvent.ShowAsync(result.Message);
+            await uiMessage_InfoEvent.ShowAsync(result.Message ?? string.Empty);
             if (result.Status)
             {
                 mq.OnInfoEventAsync -= Mq_OnInfoEventAsync;

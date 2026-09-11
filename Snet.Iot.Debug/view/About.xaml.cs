@@ -13,8 +13,18 @@ namespace Snet.Iot.Debug.view
         public About()
         {
             InitializeComponent();
+            Loaded += OnLoaded;
+        }
 
-            _ = InitWebViewAsync(webView, "cache", "https://snet.cn");
+        /// <summary>首次加载控件时初始化 WebView2；异常由初始化边界记录。</summary>
+        private async void OnLoaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            Loaded -= OnLoaded;
+            string cacheFolder = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Snet.Iot.Debug",
+                "WebView2");
+            await InitWebViewAsync(webView, cacheFolder, "https://snet.cn");
         }
 
         /// <summary>

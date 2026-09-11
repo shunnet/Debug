@@ -7,6 +7,7 @@ namespace Snet.Iot.Debug.chart
     /// </summary>
     public partial class ChartLine : UserControl
     {
+        /// <summary>初始化单条曲线的配置视图。</summary>
         public ChartLine()
         {
             InitializeComponent();

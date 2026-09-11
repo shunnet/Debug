@@ -22,12 +22,13 @@ namespace Snet.Iot.Debug.viewModel
         /// 传输对象
         /// 外部设置好传进来
         /// </summary>
-        private IMq mq;
+        private IMq? mq;
 
         /// <summary>
         /// 标识符
         /// </summary>
-        private string tag;
+        private string tag = string.Empty;
+        private int disposed;
 
         /// <summary>
         /// ui信息处理器
@@ -132,7 +133,7 @@ namespace Snet.Iot.Debug.viewModel
         /// 信息清空
         /// </summary>
         public IAsyncRelayCommand InfoClear => p_InfoClear ??= new AsyncRelayCommand(InfoClearAsync);
-        IAsyncRelayCommand p_InfoClear;
+        IAsyncRelayCommand? p_InfoClear;
         public async Task InfoClearAsync()
         {
             await uiMessage_InfoEvent.ClearAsync();
@@ -142,7 +143,7 @@ namespace Snet.Iot.Debug.viewModel
         /// 数据清空
         /// </summary>
         public IAsyncRelayCommand DataClear => p_DataClear ??= new AsyncRelayCommand(DataClearAsync);
-        IAsyncRelayCommand p_DataClear;
+        IAsyncRelayCommand? p_DataClear;
         public async Task DataClearAsync()
         {
             await uiMessage_DataEvent.ClearAsync();
@@ -153,20 +154,21 @@ namespace Snet.Iot.Debug.viewModel
         /// 打开
         /// </summary>
         public IAsyncRelayCommand On => p_On ??= new AsyncRelayCommand(OnAsync);
-        IAsyncRelayCommand p_On;
+        IAsyncRelayCommand? p_On;
         public async Task OnAsync()
         {
-            var result = await mq.OnAsync();
-            await uiMessage_InfoEvent.ShowAsync(result.Message);
+            IMq instance = mq ?? throw new InvalidOperationException("Message queue has not been initialized.");
+            var result = await instance.OnAsync();
+            await uiMessage_InfoEvent.ShowAsync(result.Message ?? string.Empty);
             if (result.Status)
             {
-                mq.OnInfoEventAsync -= Mq_OnInfoEventAsync;
-                mq.OnInfoEventAsync += Mq_OnInfoEventAsync;
-                mq.OnDataEventAsync -= Mq_OnDataEventAsync;
-                mq.OnDataEventAsync += Mq_OnDataEventAsync;
+                instance.OnInfoEventAsync -= Mq_OnInfoEventAsync;
+                instance.OnInfoEventAsync += Mq_OnInfoEventAsync;
+                instance.OnDataEventAsync -= Mq_OnDataEventAsync;
+                instance.OnDataEventAsync += Mq_OnDataEventAsync;
             }
 
-            DeviceStatusFlashing = (await mq.GetStatusAsync()).Status;
+            DeviceStatusFlashing = (await instance.GetStatusAsync()).Status;
             TabSelectedIndex = 1;
         }
 
@@ -174,7 +176,7 @@ namespace Snet.Iot.Debug.viewModel
         /// 关闭
         /// </summary>
         public IAsyncRelayCommand Off => p_Off ??= new AsyncRelayCommand(OffAsync);
-        IAsyncRelayCommand p_Off;
+        IAsyncRelayCommand? p_Off;
         public async Task OffAsync()
         {
             if (mq == null)
@@ -182,7 +184,7 @@ namespace Snet.Iot.Debug.viewModel
                 return;  // 未启动，无需关闭
             }
             var result = await mq.OffAsync();
-            await uiMessage_InfoEvent.ShowAsync(result.Message);
+            await uiMessage_InfoEvent.ShowAsync(result.Message ?? string.Empty);
             if (result.Status)
             {
                 mq.OnInfoEventAsync -= Mq_OnInfoEventAsync;
@@ -197,11 +199,12 @@ namespace Snet.Iot.Debug.viewModel
         /// 发布
         /// </summary>
         public IAsyncRelayCommand Issue => p_Issue ??= new AsyncRelayCommand(IssueAsync);
-        IAsyncRelayCommand p_Issue;
+        IAsyncRelayCommand? p_Issue;
         public async Task IssueAsync()
         {
-            await uiMessage_InfoEvent.ShowAsync((await mq.ProduceAsync(Topic, Content)).Message);
-            DeviceStatusFlashing = (await mq.GetStatusAsync()).Status;
+            IMq instance = mq ?? throw new InvalidOperationException("Message queue has not been initialized.");
+            await uiMessage_InfoEvent.ShowAsync((await instance.ProduceAsync(Topic, Content)).Message ?? string.Empty);
+            DeviceStatusFlashing = (await instance.GetStatusAsync()).Status;
             TabSelectedIndex = 1;
         }
 
@@ -209,11 +212,12 @@ namespace Snet.Iot.Debug.viewModel
         /// 订阅
         /// </summary>
         public IAsyncRelayCommand Subscribe => p_Subscribe ??= new AsyncRelayCommand(SubscribeAsync);
-        IAsyncRelayCommand p_Subscribe;
+        IAsyncRelayCommand? p_Subscribe;
         public async Task SubscribeAsync()
         {
-            await uiMessage_InfoEvent.ShowAsync((await mq.ConsumeAsync(Topic)).Message);
-            DeviceStatusFlashing = (await mq.GetStatusAsync()).Status;
+            IMq instance = mq ?? throw new InvalidOperationException("Message queue has not been initialized.");
+            await uiMessage_InfoEvent.ShowAsync((await instance.ConsumeAsync(Topic)).Message ?? string.Empty);
+            DeviceStatusFlashing = (await instance.GetStatusAsync()).Status;
             TabSelectedIndex = 2;
         }
 
@@ -221,11 +225,12 @@ namespace Snet.Iot.Debug.viewModel
         /// 取消订阅
         /// </summary>
         public IAsyncRelayCommand UnSubscribe => p_UnSubscribe ??= new AsyncRelayCommand(UnSubscribeAsync);
-        IAsyncRelayCommand p_UnSubscribe;
+        IAsyncRelayCommand? p_UnSubscribe;
         public async Task UnSubscribeAsync()
         {
-            await uiMessage_InfoEvent.ShowAsync((await mq.UnConsumeAsync(Topic)).Message);
-            DeviceStatusFlashing = (await mq.GetStatusAsync()).Status;
+            IMq instance = mq ?? throw new InvalidOperationException("Message queue has not been initialized.");
+            await uiMessage_InfoEvent.ShowAsync((await instance.UnConsumeAsync(Topic)).Message ?? string.Empty);
+            DeviceStatusFlashing = (await instance.GetStatusAsync()).Status;
             TabSelectedIndex = 1;
         }
         #endregion
@@ -260,16 +265,16 @@ namespace Snet.Iot.Debug.viewModel
             await LanguageHandler_OnLanguageEventAsync(null, null);
 
             // 界面消息处理
-            uiMessage_DataEvent.OnInfoEventAsync += async (object? sender, Model.data.EventInfoResult e) => DataEvent = e.Message;
+            uiMessage_DataEvent.OnInfoEventAsync += (object? sender, Model.data.EventInfoResult e) => { DataEvent = e.Message ?? string.Empty; return Task.CompletedTask; };
             await uiMessage_DataEvent.StartAsync();
-            uiMessage_InfoEvent.OnInfoEventAsync += async (object? sender, Model.data.EventInfoResult e) => InfoEvent = e.Message;
+            uiMessage_InfoEvent.OnInfoEventAsync += (object? sender, Model.data.EventInfoResult e) => { InfoEvent = e.Message ?? string.Empty; return Task.CompletedTask; };
             await uiMessage_InfoEvent.StartAsync();
 
             Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
             Core.handler.LanguageHandler.OnLanguageEventAsync += LanguageHandler_OnLanguageEventAsync;
         }
 
-        private async Task LanguageHandler_OnLanguageEventAsync(object? sender, EventLanguageResult e)
+        private async Task LanguageHandler_OnLanguageEventAsync(object? sender, EventLanguageResult? e)
         {
             string title = (await Core.handler.LanguageHandler.GetLanguageAsync()) == LanguageType.zh ? " 调试工具" : " Debug Tool";
             ToolTitle = (await App.LanguageOperate.GetLanguageValueAsync(tag)) + title;
@@ -330,27 +335,22 @@ namespace Snet.Iot.Debug.viewModel
         }
         public void Dispose()
         {
-            try
-            {
-                // 退订静态语言事件，避免关闭 Tab 后 ViewModel 被静态事件持有（泄漏）
-                Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
-                mq?.Dispose();
-            }
-            catch { }
+            if (Interlocked.Exchange(ref disposed, 1) != 0) return;
+            Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
+            mq?.Dispose();
+            uiMessage_DataEvent.Dispose();
+            uiMessage_InfoEvent.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         public async ValueTask DisposeAsync()
         {
-            try
-            {
-                // 退订静态语言事件，避免关闭 Tab 后 ViewModel 被静态事件持有（泄漏）
-                Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
-                if (mq != null)
-                {
-                    await mq.DisposeAsync();
-                }
-            }
-            catch { }
+            if (Interlocked.Exchange(ref disposed, 1) != 0) return;
+            Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
+            if (mq != null) await mq.DisposeAsync();
+            await uiMessage_DataEvent.DisposeAsync();
+            await uiMessage_InfoEvent.DisposeAsync();
+            GC.SuppressFinalize(this);
         }
         #endregion
     }

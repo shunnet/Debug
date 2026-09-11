@@ -28,9 +28,12 @@ namespace Snet.Iot.Debug
         private IAsyncRelayCommand? navigationView_Loaded;
         private async Task NavigationView_LoadedAsync(object? sender)
         {
+            if (sender is not RoutedEventArgs routedEvent || routedEvent.Source is not NavigationView view)
+            {
+                return;
+            }
             await Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
             {
-                NavigationView view = sender.GetSource<RoutedEventArgs>().Source.GetSource<NavigationView>();
                 if (App.tabDeviceModel == null)
                 {
                     var tabDevice = ControlFinder.FindControlsInLogicalTree<Snet.Iot.Debug.TabDeviceControl>(view).FirstOrDefault();
@@ -51,7 +54,10 @@ namespace Snet.Iot.Debug
         private IAsyncRelayCommand? navigationView_SelectionChanged;
         private async Task NavigationView_SelectionChangedAsync(object? sender)
         {
-            NavigationView view = sender.GetSource<RoutedEventArgs>().Source.GetSource<NavigationView>();
+            if (sender is not RoutedEventArgs routedEvent || routedEvent.Source is not NavigationView view)
+            {
+                return;
+            }
             if (App.tabDeviceModel == null)
             {
                 var tabDevice = ControlFinder.FindControlsInLogicalTree<Snet.Iot.Debug.TabDeviceControl>(view).FirstOrDefault();
@@ -70,7 +76,12 @@ namespace Snet.Iot.Debug
                 else
                 {
                     string sTag = view.SelectedItem.TargetPageTag;
-                    switch (view.SelectedItem.NavigationViewItemParent.TargetPageTag)
+                    string? parentTag = view.SelectedItem.NavigationViewItemParent?.TargetPageTag;
+                    if (parentTag is null)
+                    {
+                        return;
+                    }
+                    switch (parentTag)
                     {
                         case "Daq":
                             Daq daq = InjectionWpf.GetService<Daq>();

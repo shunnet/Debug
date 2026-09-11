@@ -11,19 +11,54 @@ using System.Windows.Input;
 
 namespace Snet.Iot.Debug.template
 {
+    /// <summary>提供消息服务调试页的公共状态、日志管道和可释放生命周期。</summary>
     public class MqServiceTemplateModel<T> : BindNotify, IDisposable, IAsyncDisposable
     {
+        private readonly SemaphoreSlim initializationGate = new(1, 1);
+        private bool initialized;
+        private int disposed;
+
         public MqServiceTemplateModel()
         {
             // 界面消息处理
-            uiMessage_DataEvent.OnInfoEventAsync += async (object? sender, Model.data.EventInfoResult e) => DataEvent = e.Message;
-            uiMessage_DataEvent.StartAsync();
-            uiMessage_InfoEvent.OnInfoEventAsync += async (object? sender, Model.data.EventInfoResult e) => InfoEvent = e.Message;
-            uiMessage_InfoEvent.StartAsync();
+            uiMessage_DataEvent.OnInfoEventAsync += (object? sender, Model.data.EventInfoResult e) =>
+            {
+                DataEvent = e.Message ?? string.Empty;
+                return Task.CompletedTask;
+            };
+            uiMessage_InfoEvent.OnInfoEventAsync += (object? sender, Model.data.EventInfoResult e) =>
+            {
+                InfoEvent = e.Message ?? string.Empty;
+                return Task.CompletedTask;
+            };
 
             Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
             Core.handler.LanguageHandler.OnLanguageEventAsync += LanguageHandler_OnLanguageEventAsync;
 
+        }
+
+        /// <summary>异步启动两个界面日志处理器并刷新本地化标题；重复调用无副作用。</summary>
+        /// <returns>初始化完成时结束的任务。</returns>
+        public async Task InitializeAsync()
+        {
+            ObjectDisposedException.ThrowIf(Volatile.Read(ref disposed) != 0, this);
+            await initializationGate.WaitAsync();
+            try
+            {
+                ObjectDisposedException.ThrowIf(Volatile.Read(ref disposed) != 0, this);
+                if (initialized)
+                {
+                    return;
+                }
+                await uiMessage_DataEvent.StartAsync();
+                await uiMessage_InfoEvent.StartAsync();
+                await LanguageHandler_OnLanguageEventAsync(null, new EventLanguageResult());
+                initialized = true;
+            }
+            finally
+            {
+                initializationGate.Release();
+            }
         }
 
         public async Task LanguageHandler_OnLanguageEventAsync(object? sender, EventLanguageResult e)
@@ -36,12 +71,12 @@ namespace Snet.Iot.Debug.template
         /// <summary>
         /// Mq服务端对象
         /// </summary>
-        public object MqService { get; set; }
+        public object? MqService { get; set; }
 
         /// <summary>
         /// 多语言的健
         /// </summary>
-        public string Key { get; set; }
+        public string Key { get; set; } = string.Empty;
 
         /// <summary>
         /// 基础数据
@@ -127,7 +162,7 @@ namespace Snet.Iot.Debug.template
         /// 信息清空
         /// </summary>
         public IAsyncRelayCommand InfoClear => p_InfoClear ??= new AsyncRelayCommand(InfoClearAsync);
-        IAsyncRelayCommand p_InfoClear;
+        IAsyncRelayCommand? p_InfoClear;
         public async Task InfoClearAsync()
         {
             await uiMessage_InfoEvent.ClearAsync();
@@ -137,7 +172,7 @@ namespace Snet.Iot.Debug.template
         /// 数据清空
         /// </summary>
         public IAsyncRelayCommand DataClear => p_DataClear ??= new AsyncRelayCommand(DataClearAsync);
-        IAsyncRelayCommand p_DataClear;
+        IAsyncRelayCommand? p_DataClear;
         public async Task DataClearAsync()
         {
             await uiMessage_DataEvent.ClearAsync();
@@ -147,15 +182,15 @@ namespace Snet.Iot.Debug.template
         /// 打开
         /// </summary>
         public IAsyncRelayCommand On => p_On ??= new AsyncRelayCommand(OnAsync);
-        IAsyncRelayCommand p_On;
-        public virtual async Task OnAsync() { }
+        IAsyncRelayCommand? p_On;
+        public virtual Task OnAsync() => Task.CompletedTask;
 
         /// <summary>
         /// 关闭
         /// </summary>
         public IAsyncRelayCommand Off => p_Off ??= new AsyncRelayCommand(OffAsync);
-        IAsyncRelayCommand p_Off;
-        public virtual async Task OffAsync() { }
+        IAsyncRelayCommand? p_Off;
+        public virtual Task OffAsync() => Task.CompletedTask;
 
         #region 事件
 
@@ -164,13 +199,17 @@ namespace Snet.Iot.Debug.template
         /// </summary>
         public IAsyncRelayCommand TextEditor_PreviewKeyDown => p_TextEditor_PreviewKeyDown ??= new AsyncRelayCommand<EventCommandArgs>(TextEditor_PreviewKeyDownAsync);
         IAsyncRelayCommand? p_TextEditor_PreviewKeyDown;
-        public async Task TextEditor_PreviewKeyDownAsync(EventCommandArgs? e)
+        public Task TextEditor_PreviewKeyDownAsync(EventCommandArgs? e)
         {
-            KeyEventArgs keyEvent = e.EventArgs.GetSource<KeyEventArgs>();
+            if (e?.EventArgs is not KeyEventArgs keyEvent)
+            {
+                return Task.CompletedTask;
+            }
             if ((keyEvent.Key == System.Windows.Input.Key.V && Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) || keyEvent.Key == System.Windows.Input.Key.Delete || keyEvent.Key == System.Windows.Input.Key.Back)
             {
                 keyEvent.Handled = true;
             }
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -178,10 +217,13 @@ namespace Snet.Iot.Debug.template
         /// </summary>
         public IAsyncRelayCommand TextEditor_PreviewTextInput => p_TextEditor_PreviewTextInput ??= new AsyncRelayCommand<EventCommandArgs>(TextEditor_PreviewTextInputAsync);
         IAsyncRelayCommand? p_TextEditor_PreviewTextInput;
-        public async Task TextEditor_PreviewTextInputAsync(EventCommandArgs? e)
+        public Task TextEditor_PreviewTextInputAsync(EventCommandArgs? e)
         {
-            TextCompositionEventArgs eventArgs = e.EventArgs.GetSource<TextCompositionEventArgs>();
-            eventArgs.Handled = true;
+            if (e?.EventArgs is TextCompositionEventArgs eventArgs)
+            {
+                eventArgs.Handled = true;
+            }
+            return Task.CompletedTask;
         }
 
 
@@ -189,13 +231,17 @@ namespace Snet.Iot.Debug.template
         /// 文本内容变化时自动滚动到末尾，保持最新日志可见
         /// </summary>
         public IAsyncRelayCommand TextEditor_TextChanged => p_TextEditor_TextChanged ??= new AsyncRelayCommand<EventCommandArgs>(TextEditor_TextChangedAsync);
-        IAsyncRelayCommand p_TextEditor_TextChanged;
-        public async Task TextEditor_TextChangedAsync(EventCommandArgs? e)
+        IAsyncRelayCommand? p_TextEditor_TextChanged;
+        public Task TextEditor_TextChangedAsync(EventCommandArgs? e)
         {
-            TextEditor text = e.Source.GetSource<TextEditor>();
+            if (e?.Source is not TextEditor text)
+            {
+                return Task.CompletedTask;
+            }
             text.SelectionStart = text.Text.Length;
             text.SelectionLength = 0;
             text.ScrollToEnd();
+            return Task.CompletedTask;
         }
 
 
@@ -227,17 +273,7 @@ namespace Snet.Iot.Debug.template
         /// </summary>
         public void Dispose()
         {
-            try
-            {
-                // 退订静态语言事件，避免关闭 Tab 后 ViewModel 被静态事件持有（泄漏）
-                Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
-                IDisposable? sisposable = MqService.GetSource<IDisposable>();
-                if (sisposable != null)
-                {
-                    sisposable.Dispose();
-                }
-            }
-            catch { }
+            DisposeAsync().AsTask().GetAwaiter().GetResult();
         }
         /// <summary>
         /// 异步释放
@@ -245,17 +281,25 @@ namespace Snet.Iot.Debug.template
         /// <returns></returns>
         public async ValueTask DisposeAsync()
         {
-            try
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
             {
-                // 退订静态语言事件，避免关闭 Tab 后 ViewModel 被静态事件持有（泄漏）
-                Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
-                IAsyncDisposable? asyncDisposable = MqService.GetSource<IAsyncDisposable>();
-                if (asyncDisposable != null)
-                {
-                    await asyncDisposable.DisposeAsync();
-                }
+                return;
             }
-            catch { }
+            Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
+            await initializationGate.WaitAsync();
+            initializationGate.Release();
+            if (MqService is IAsyncDisposable asyncDisposable)
+            {
+                await asyncDisposable.DisposeAsync();
+            }
+            else
+            {
+                (MqService as IDisposable)?.Dispose();
+            }
+            await uiMessage_DataEvent.DisposeAsync();
+            await uiMessage_InfoEvent.DisposeAsync();
+            initializationGate.Dispose();
+            GC.SuppressFinalize(this);
         }
 
 

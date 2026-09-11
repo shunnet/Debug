@@ -231,9 +231,8 @@ namespace Snet.Iot.Debug
         /// </summary>
         private void OnExit(object sender, ExitEventArgs e)
         {
+            UnregisterEvents();
             InjectionWpf.ClearService();
-            GC.SuppressFinalize(this);
-            GC.Collect();
         }
 
         /// <summary>
@@ -288,6 +287,14 @@ namespace Snet.Iot.Debug
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
         }
 
+        /// <summary>注销应用级异常事件，避免重复启动测试或设计器宿主保留应用实例。</summary>
+        private void UnregisterEvents()
+        {
+            TaskScheduler.UnobservedTaskException -= TaskScheduler_UnobservedTaskException;
+            DispatcherUnhandledException -= App_DispatcherUnhandledException;
+            AppDomain.CurrentDomain.UnhandledException -= CurrentDomain_UnhandledException;
+        }
+
         /// <summary>
         /// Task 线程内未捕获异常处理事件，先进行空判断再访问 HResult 属性以避免空引用异常。
         /// </summary>
@@ -295,13 +302,8 @@ namespace Snet.Iot.Debug
         {
             try
             {
-                var exception = e.Exception as Exception;
-                if (exception == null)
-                    return;
-
-                // HResult = -2146233088 (0x80131500) 对应 ExternalException 基类，
-                // 通常为正常取消或可忽略的系统级异常，不弹窗处理。
-                if (exception.HResult == -2146233088)
+                AggregateException exception = e.Exception.Flatten();
+                if (exception.InnerExceptions.All(item => item is OperationCanceledException))
                     return;
 
                 await HandleException(exception);
@@ -381,15 +383,34 @@ namespace Snet.Iot.Debug
                 msg = stackTrace;
             else
                 msg = "未知异常";
-            if (Application.Current == null)
-                return;
-            await Application.Current.Dispatcher.InvokeAsync(async () =>
-            {
-                await Snet.Windows.Controls.message.MessageBox.Show(msg, LanguageOperate.GetLanguageValue("全局异常捕获"), Snet.Windows.Controls.@enum.MessageBoxButton.OK, Snet.Windows.Controls.@enum.MessageBoxImage.Exclamation);
-            }
-            , System.Windows.Threading.DispatcherPriority.Loaded);
+            await LogHelper.ErrorAsync(msg, "Snet.Iot.Debug", e);
 
-            LogHelper.Error(msg, "Snet.Iot.Debug", e);
+            Application? application = Application.Current;
+            if (application == null || application.Dispatcher.HasShutdownStarted)
+                return;
+
+            string title = LanguageOperate.GetLanguageValue("全局异常捕获") ?? "Unhandled exception";
+            Task showDialogTask;
+            if (application.Dispatcher.CheckAccess())
+            {
+                showDialogTask = Snet.Windows.Controls.message.MessageBox.Show(
+                    msg,
+                    title,
+                    Snet.Windows.Controls.@enum.MessageBoxButton.OK,
+                    Snet.Windows.Controls.@enum.MessageBoxImage.Exclamation);
+            }
+            else
+            {
+                showDialogTask = await application.Dispatcher.InvokeAsync(
+                    () => Snet.Windows.Controls.message.MessageBox.Show(
+                        msg,
+                        title,
+                        Snet.Windows.Controls.@enum.MessageBoxButton.OK,
+                        Snet.Windows.Controls.@enum.MessageBoxImage.Exclamation),
+                    System.Windows.Threading.DispatcherPriority.Loaded);
+            }
+
+            await showDialogTask;
         }
 
         #endregion

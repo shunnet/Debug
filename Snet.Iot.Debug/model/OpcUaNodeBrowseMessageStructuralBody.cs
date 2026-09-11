@@ -5,7 +5,7 @@ namespace Snet.Iot.Debug.model
     /// <summary>
     /// OPC UA 节点浏览消息结构体，用于在列表中展示节点的详细属性信息。
     /// </summary>
-    public class OpcUaNodeBrowseMessageStructuralBody : BindNotify
+    public sealed class OpcUaNodeBrowseMessageStructuralBody : BindNotify
     {
         /// <summary>
         /// 序号

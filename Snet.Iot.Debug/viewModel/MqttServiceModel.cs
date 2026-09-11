@@ -4,7 +4,8 @@ using Snet.Utility;
 using static Snet.Mqtt.service.MqttServiceData;
 namespace Snet.Iot.Debug.viewModel
 {
-    public class MqttServiceModel : MqServiceTemplateModel<Basics>
+    /// <summary>MQTT TCP 服务调试模型。</summary>
+    public sealed class MqttServiceModel : MqServiceTemplateModel<Basics>
     {
         public MqttServiceModel()
         {
@@ -14,15 +15,16 @@ namespace Snet.Iot.Debug.viewModel
             MqService = MqttServiceOperate.Instance(BasicsData);
             //工具标题
             Key = "MqttService";
-            LanguageHandler_OnLanguageEventAsync(null, null);
         }
 
         public override async Task OnAsync()
         {
-            MqttServiceOperate Mq = MqService.GetSource<MqttServiceOperate>();
-            var mq = (await Mq.CreateInstanceAsync(BasicsData.ToJson(true))).ResultData.GetSource<MqttServiceOperate>();
+            await InitializeAsync();
+            MqttServiceOperate factory = MqService as MqttServiceOperate ?? throw new InvalidOperationException("MQTT service has not been initialized.");
+            var creation = await factory.CreateInstanceAsync(BasicsData.ToJson(true));
+            MqttServiceOperate mq = creation.ResultData as MqttServiceOperate ?? throw new InvalidOperationException(creation.Message ?? "MQTT service creation failed.");
             var result = await mq.OnAsync();
-            await uiMessage_InfoEvent.ShowAsync(result.Message);
+            await uiMessage_InfoEvent.ShowAsync(result.Message ?? string.Empty);
             if (result.Status)
             {
                 mq.OnInfoEventAsync -= Mq_OnInfoEventAsync;
@@ -37,9 +39,10 @@ namespace Snet.Iot.Debug.viewModel
 
         public override async Task OffAsync()
         {
-            MqttServiceOperate mq = MqService.GetSource<MqttServiceOperate>();
+            await InitializeAsync();
+            MqttServiceOperate mq = MqService as MqttServiceOperate ?? throw new InvalidOperationException("MQTT service has not been initialized.");
             var result = await mq.OffAsync();
-            await uiMessage_InfoEvent.ShowAsync(result.Message);
+            await uiMessage_InfoEvent.ShowAsync(result.Message ?? string.Empty);
             if (result.Status)
             {
                 mq.OnInfoEventAsync -= Mq_OnInfoEventAsync;

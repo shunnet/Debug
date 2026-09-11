@@ -14,6 +14,7 @@ using Snet.Windows.Controls.property;
 using Snet.Windows.Core.mvvm;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -26,7 +27,7 @@ namespace Snet.Iot.Debug.viewModel
         /// <summary>
         /// DAQ对象
         /// </summary>
-        public OpcUaClientOperate Daq;
+        public OpcUaClientOperate? Daq;
 
         /// <summary>
         /// 属性弹窗
@@ -45,7 +46,7 @@ namespace Snet.Iot.Debug.viewModel
         /// <summary>
         /// 树节点选中集合
         /// </summary>
-        public OpcUaNodeBrowseStructuralBody NodeSelectedItem
+        public OpcUaNodeBrowseStructuralBody? NodeSelectedItem
         {
             get => GetProperty(() => NodeSelectedItem);
             set => SetProperty(() => NodeSelectedItem, value);
@@ -130,9 +131,11 @@ namespace Snet.Iot.Debug.viewModel
         /// <summary>
         /// 复制
         /// </summary>
-        public IAsyncRelayCommand Copy => p_Copy ??= new AsyncRelayCommand(CopyAsync);
-        IAsyncRelayCommand? p_Copy;
-        public async Task CopyAsync()
+        public IRelayCommand Copy => p_Copy ??= new RelayCommand(CopyValue);
+        private IRelayCommand? p_Copy;
+
+        /// <summary>复制当前节点地址。</summary>
+        private void CopyValue()
         {
             if (NodeMessageSelectedItem == null)
                 return;
@@ -149,9 +152,10 @@ namespace Snet.Iot.Debug.viewModel
             if (Daq == null)
             {
                 param.SetBasics(new OpcUaClientData.Basics());
-                if ((await DialogHost.Show(param, "DialogHost")).ToBool())
+                if (await DialogHost.Show(param, "DialogHost") is true)
                 {
-                    OpcUaClientData.Basics basics = param.GetBasics().GetSource<OpcUaClientData.Basics>();
+                    OpcUaClientData.Basics basics = param.GetBasics() as OpcUaClientData.Basics
+                        ?? throw new InvalidOperationException("The OPC UA connection settings are invalid.");
                     Daq = await OpcUaClientOperate.InstanceAsync(basics);
                     OperateResult result = await Daq.OnAsync();
                     if (result.Status)
@@ -165,17 +169,17 @@ namespace Snet.Iot.Debug.viewModel
                     else
                     {
                         await OffAsync();
-                        await Snet.Windows.Controls.message.MessageBox.Show(result.Message);
+                        await Snet.Windows.Controls.message.MessageBox.Show(result.Message ?? string.Empty);
                     }
                 }
                 else
                 {
-                    await Snet.Windows.Controls.message.MessageBox.Show(App.LanguageOperate.GetLanguageValue("已取消"));
+                    await Snet.Windows.Controls.message.MessageBox.Show(App.LanguageOperate.GetLanguageValue("已取消") ?? "已取消");
                 }
             }
             else
             {
-                await Snet.Windows.Controls.message.MessageBox.Show(App.LanguageOperate.GetLanguageValue("连接已经打开，如需更换请先关闭此连接"));
+                await Snet.Windows.Controls.message.MessageBox.Show(App.LanguageOperate.GetLanguageValue("连接已经打开，如需更换请先关闭此连接") ?? "连接已经打开，如需更换请先关闭此连接");
             }
         }
 
@@ -186,14 +190,18 @@ namespace Snet.Iot.Debug.viewModel
         IAsyncRelayCommand? p_Off;
         public async Task OffAsync()
         {
-            if (Daq != null)
-            {
-                await Daq.OffAsync();
-                await Daq.DisposeAsync();
-            }
-            browseToken?.Cancel();
-            browseToken?.Dispose();
+            CancellationTokenSource? cancellation = browseToken;
             browseToken = null;
+            cancellation?.Cancel();
+
+            OpcUaClientOperate? daq = Daq;
+            Daq = null;
+            if (daq != null)
+            {
+                await daq.OffAsync();
+                await daq.DisposeAsync();
+            }
+            cancellation?.Dispose();
             // 释放节点树：每个节点订阅了静态皮肤事件，必须显式退订
             if (Node != null)
             {
@@ -204,26 +212,27 @@ namespace Snet.Iot.Debug.viewModel
                 Node.Clear();
             }
             NodeMessage?.Clear();
-            Daq = null;
+            _cacheData.Clear();
         }
 
         #region 节点浏览
         /// <summary>
         /// 生命周期：浏览节点
         /// </summary>
-        CancellationTokenSource browseToken;
+        CancellationTokenSource? browseToken;
         /// <summary>
         /// 选中的项
         /// </summary>
-        private OpcUaNodeBrowseStructuralBody IsSelectItem;
+        private OpcUaNodeBrowseStructuralBody? IsSelectItem;
         // 树节点选中后触发：显示当前节点及子节点的详细信息
         public IAsyncRelayCommand TreeView_SelectedItemChanged => p_TreeView_SelectedItemChanged ??= new AsyncRelayCommand<RoutedPropertyChangedEventArgs<object>>(TreeView_SelectedItemChangedAsync);
-        IAsyncRelayCommand p_TreeView_SelectedItemChanged;
+        IAsyncRelayCommand? p_TreeView_SelectedItemChanged;
         public async Task TreeView_SelectedItemChangedAsync(RoutedPropertyChangedEventArgs<object>? e)
         {
             if (e?.NewValue is not OpcUaNodeBrowseStructuralBody selectedNode) return;
 
             if (selectedNode.NodeID is not ReferenceDescription reference) return;
+            if (Daq is not OpcUaClientOperate client || browseToken is null) return;
 
             IsSelectItem = selectedNode;
 
@@ -251,13 +260,13 @@ namespace Snet.Iot.Debug.viewModel
                 nodeIds.Add(nodeId);
             }
 
-            DataValue[] dataValues = await Daq.DetailedReadAllNodeDataAsync(nodeIds, browseToken.Token);
+            DataValue[] dataValues = await client.DetailedReadAllNodeDataAsync(nodeIds, browseToken.Token);
             await ShowDetailedMessageAsync(nodeId.ToString(), dataValues, nodeIds, selectedNode.IsLoading);
         }
 
         // 表格被选中时更新地址绑定
         public IAsyncRelayCommand DataGrid_SelectedCellsChanged => p_DataGrid_SelectedCellsChanged ??= new AsyncRelayCommand<object>(DataGrid_SelectedCellsChangedAsync);
-        IAsyncRelayCommand p_DataGrid_SelectedCellsChanged;
+        IAsyncRelayCommand? p_DataGrid_SelectedCellsChanged;
         public Task DataGrid_SelectedCellsChangedAsync(object? e)
         {
             if (!string.IsNullOrWhiteSpace(NodeMessageSelectedItem?.Name))
@@ -268,7 +277,7 @@ namespace Snet.Iot.Debug.viewModel
 
         // TreeView 节点展开时触发动态加载
         public IAsyncRelayCommand TreeViewItem_Expanded => p_TreeViewItem_Expanded ??= new AsyncRelayCommand<RoutedEventArgs>(TreeViewItem_ExpandedAsync);
-        IAsyncRelayCommand p_TreeViewItem_Expanded;
+        IAsyncRelayCommand? p_TreeViewItem_Expanded;
         private async Task TreeViewItem_ExpandedAsync(RoutedEventArgs? e)
         {
             if (e?.OriginalSource is TreeViewItem item && item.DataContext is OpcUaNodeBrowseStructuralBody node)
@@ -278,63 +287,64 @@ namespace Snet.Iot.Debug.viewModel
                 {
                     IsSelectItem = node;
                     node.Children.Clear();
-                    await GetNodeInformAsync((NodeId)reference.NodeId, node, browseToken.Token, false);
+                    CancellationToken token = browseToken?.Token ?? CancellationToken.None;
+                    await GetNodeInformAsync((NodeId)reference.NodeId, node, token, false);
                 }
             }
         }
 
         // 分割 DataValue[] 为指定列宽度
-        private Task<List<object[]>> SegmentationAsync<T>(T[] data, int segmentSize)
+        private static List<object?[]> Segment<T>(T[] data, int segmentSize)
         {
-            var result = new List<object[]>();
+            ArgumentNullException.ThrowIfNull(data);
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(segmentSize, 0);
+            var result = new List<object?[]>();
             for (int i = 0; i < data.Length; i += segmentSize)
             {
-                var segment = new object[segmentSize];
+                var segment = new object?[segmentSize];
                 for (int j = 0; j < segmentSize && i + j < data.Length; j++)
                     segment[j] = data[i + j];
 
                 result.Add(segment);
             }
-            return Task.FromResult(result);
+            return result;
         }
 
         // 缓存 NodeId 的字典
-        ConcurrentDictionary<string, List<OpcUaNodeBrowseMessageStructuralBody>> _cacheData = new ConcurrentDictionary<string, List<OpcUaNodeBrowseMessageStructuralBody>>();
+        private readonly ConcurrentDictionary<string, IReadOnlyList<OpcUaNodeBrowseMessageStructuralBody>> _cacheData = new();
         // 显示当前节点详细值、数据类型、描述、访问权限等
         private async Task ShowDetailedMessageAsync(string upNodeId, DataValue[] dataValues, List<NodeId> nodeIds, bool isLoading)
         {
-            await Task.Run(async () =>
+            OpcUaClientOperate daq = Daq ?? throw new InvalidOperationException("OPC UA 连接尚未打开。");
+            CancellationToken token = browseToken?.Token ?? CancellationToken.None;
+            if (!_cacheData.TryGetValue(upNodeId, out IReadOnlyList<OpcUaNodeBrowseMessageStructuralBody>? nodeMessage) || !isLoading)
             {
-                //实例化
-                List<OpcUaNodeBrowseMessageStructuralBody>? nodeMessage = null;
-                if (!_cacheData.TryGetValue(upNodeId, out nodeMessage) || !isLoading)
+                var newMessages = new List<OpcUaNodeBrowseMessageStructuralBody>();
+                List<object?[]> segments = Segment(dataValues, 5);
+                for (int i = 0; i < nodeIds.Count && i < segments.Count; i++)
                 {
-                    nodeMessage ??= new List<OpcUaNodeBrowseMessageStructuralBody>();
-                    nodeMessage.Clear();
-                    var segments = await SegmentationAsync(dataValues, 5);
-                    for (int i = 0; i < nodeIds.Count && i < segments.Count; i++)
+                    object?[] segment = segments[i];
+                    var data = new OpcUaNodeBrowseMessageStructuralBody
                     {
-                        var segment = segments[i];
-
-                        var data = new OpcUaNodeBrowseMessageStructuralBody
-                        {
-                            Name = nodeIds[i].IdentifierAsString,
-                            Address = nodeIds[i].ToString(),
-                            Value = segment[1]?.ToString(),
-                            Type = (await Daq.GetNodeValueTypeAsync(nodeIds[i], browseToken.Token)).GetSource<BuiltInType>().ToString(),
-                            Description = segment[4]?.ToString(),
-                            AccessLevel = await Daq.GetAccessLevelAsync((DataValue)segment[2], browseToken.Token)
-                        };
-                        nodeMessage.Add(data);
-                    }
-                    _cacheData.AddOrUpdate(upNodeId, nodeMessage, (o, v) => nodeMessage);
+                        Name = nodeIds[i].IdentifierAsString ?? string.Empty,
+                        Address = nodeIds[i].ToString(),
+                        Value = segment[1]?.ToString() ?? string.Empty,
+                        Type = (await daq.GetNodeValueTypeAsync(nodeIds[i], token)).GetSource<BuiltInType>().ToString(),
+                        Description = segment[4]?.ToString() ?? string.Empty,
+                        AccessLevel = segment[2] is DataValue access
+                            ? await daq.GetAccessLevelAsync(access, token)
+                            : string.Empty
+                    };
+                    newMessages.Add(data);
                 }
+                nodeMessage = newMessages.AsReadOnly();
+                _cacheData[upNodeId] = nodeMessage;
+            }
 
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    NodeMessage = new ObservableCollection<OpcUaNodeBrowseMessageStructuralBody>(nodeMessage);
-                });
-            }, browseToken.Token);
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                NodeMessage = new ObservableCollection<OpcUaNodeBrowseMessageStructuralBody>(nodeMessage);
+            });
         }
 
         // 缓存字典
@@ -345,26 +355,27 @@ namespace Snet.Iot.Debug.viewModel
         /// <param name="iconKey">资源名</param>
         /// <param name="defaultKey">默认图标资源名</param>
         /// <returns>DrawingImage 图标</returns>
-        public async Task<DrawingImage> GetIcon(string iconKey, string defaultKey = "Default")
+        public Task<DrawingImage> GetIcon(string iconKey, string defaultKey = "Default")
         {
             // 已缓存
             if (_iconCache.TryGetValue(iconKey, out var cached))
-                return cached;
+                return Task.FromResult(cached);
 
             // 资源不存在/类型不符时回退默认图标，避免首次加载节点即抛 ResourceReferenceKeyNotFoundException
             try
             {
-                DrawingImage? icon = Application.Current.FindResource(iconKey) as DrawingImage
-                    ?? Application.Current.FindResource(defaultKey) as DrawingImage;
+                DrawingImage icon = Application.Current.FindResource(iconKey) as DrawingImage
+                    ?? Application.Current.FindResource(defaultKey) as DrawingImage
+                    ?? new DrawingImage();
                 _iconCache[iconKey] = icon;
-                return icon;
+                return Task.FromResult(icon);
             }
             catch
             {
-                DrawingImage? fallback = Application.Current.FindResource(defaultKey) as DrawingImage;
+                DrawingImage fallback = Application.Current.FindResource(defaultKey) as DrawingImage ?? new DrawingImage();
                 _iconCache[defaultKey] = fallback;
                 _iconCache[iconKey] = fallback;
-                return fallback;
+                return Task.FromResult(fallback);
             }
         }
 
@@ -386,7 +397,7 @@ namespace Snet.Iot.Debug.viewModel
         /// 滚动条到底部时加载更多节点
         /// </summary>
         public IAsyncRelayCommand ScrollViewer_ScrollChanged => p_ScrollViewer_ScrollChanged ??= new AsyncRelayCommand<ScrollChangedEventArgs>(ScrollViewer_ScrollChangedAsync);
-        IAsyncRelayCommand p_ScrollViewer_ScrollChanged;
+        IAsyncRelayCommand? p_ScrollViewer_ScrollChanged;
         private async Task ScrollViewer_ScrollChangedAsync(ScrollChangedEventArgs? e)
         {
             if (e == null) return;
@@ -397,12 +408,8 @@ namespace Snet.Iot.Debug.viewModel
 
             if (e.VerticalOffset >= e.ExtentHeight - e.ViewportHeight - 50)
             {
-                if (IsSelectItem == null) return;
-                if (IsSelectItem is OpcUaNodeBrowseStructuralBody selected)
-                {
-                    // 加载当前节点更多
-                    await GetNodeInformAsync((NodeId)IsSelectItem.NodeID.GetSource<ReferenceDescription>().NodeId, selected, CancellationToken.None, true);
-                }
+                if (IsSelectItem?.NodeID is not ReferenceDescription reference || browseToken is null) return;
+                await GetNodeInformAsync((NodeId)reference.NodeId, IsSelectItem, browseToken.Token, true);
             }
         }
 
@@ -411,22 +418,23 @@ namespace Snet.Iot.Debug.viewModel
         /// </summary>
         private async Task GetNodeInformAsync(CancellationToken token)
         {
+            OpcUaClientOperate client = Daq ?? throw new InvalidOperationException("OPC UA client is not connected.");
             NodeId id = (NodeId)ObjectIds.ObjectsFolder;
-            List<ReferenceDescription> references = await Daq.GetAllNodeAsync(id, token);
+            List<ReferenceDescription> references = await client.GetAllNodeAsync(id, token);
             foreach (var reference in references)
             {
                 if (token.IsCancellationRequested) return; // 取消操作
 
-                List<ReferenceDescription> childRefs = await Daq.GetAllNodeAsync((NodeId)reference.NodeId, token);
+                List<ReferenceDescription> childRefs = await client.GetAllNodeAsync((NodeId)reference.NodeId, token);
 
                 if (token.IsCancellationRequested)
                     return;
 
-                var iconName = await Daq.GetNodeIconTypeAsync(reference, id, token);
+                var iconName = await client.GetNodeIconTypeAsync(reference, id, token);
 
                 var body = new OpcUaNodeBrowseStructuralBody
                 {
-                    Name = reference.BrowseName.Name,
+                    Name = reference.BrowseName.Name ?? reference.DisplayName.Text ?? string.Empty,
                     NodeID = reference,
                     Icon = await GetIcon(iconName),
                     IconKey = iconName,
@@ -434,7 +442,9 @@ namespace Snet.Iot.Debug.viewModel
                 };
                 if (childRefs.Count > 0)
                     body.Children.Add(new());
-                await Application.Current.Dispatcher.InvokeAsync(() => Node.Add(body));
+                Application? application = Application.Current;
+                if (application is null) return;
+                await application.Dispatcher.InvokeAsync(() => Node.Add(body));
             }
         }
 
@@ -443,9 +453,10 @@ namespace Snet.Iot.Debug.viewModel
         {
             try
             {
-                if (parent.IsLoading) return;
+                OpcUaClientOperate client = Daq ?? throw new InvalidOperationException("OPC UA client is not connected.");
+                if (parent.IsLoading || token.IsCancellationRequested) return;
                 NodeId id = (NodeId)ObjectIds.ObjectsFolder;
-                List<ReferenceDescription> references = await Daq.GetAllNodeAsync(nodeId, token);
+                List<ReferenceDescription> references = await client.GetAllNodeAsync(nodeId, token);
                 PagedResult<ReferenceDescription> result = PageHandler.ToPagedResult(references, parent.PageIndex);
                 if (references.Count > result.PageSize && !result.IsLastPage)
                 {
@@ -460,13 +471,13 @@ namespace Snet.Iot.Debug.viewModel
                 {
                     if (token.IsCancellationRequested) return; // 取消操作
 
-                    List<ReferenceDescription> childRefs = await Daq.GetAllNodeAsync((NodeId)reference.NodeId, token);
+                    List<ReferenceDescription> childRefs = await client.GetAllNodeAsync((NodeId)reference.NodeId, token);
 
-                    var iconName = await Daq.GetNodeIconTypeAsync(reference, id, token);
+                    var iconName = await client.GetNodeIconTypeAsync(reference, id, token);
 
                     var body = new OpcUaNodeBrowseStructuralBody
                     {
-                        Name = reference.BrowseName.Name,
+                        Name = reference.BrowseName.Name ?? reference.DisplayName.Text ?? string.Empty,
                         NodeID = reference,
                         Icon = await GetIcon(iconName),
                         IconKey = iconName,
@@ -474,7 +485,9 @@ namespace Snet.Iot.Debug.viewModel
                     };
                     if (childRefs.Count > 0)
                         body.Children.Add(new());
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    Application? application = Application.Current;
+                    if (application is null) return;
+                    await application.Dispatcher.InvokeAsync(() =>
                     {
                         if (parent == null)
                             Node.Add(body);
@@ -482,6 +495,10 @@ namespace Snet.Iot.Debug.viewModel
                             parent.Children.Add(body);
                     });
                 }
+            }
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            {
+                // 关闭连接或切换节点时的正常取消。
             }
             catch (Exception ex)
             {
@@ -491,7 +508,7 @@ namespace Snet.Iot.Debug.viewModel
 
         // 鼠标右键 TreeView 上点击，确保节点被选中
         public IAsyncRelayCommand TreeView_PreviewMouseRightButtonDown => p_TreeView_PreviewMouseRightButtonDown ??= new AsyncRelayCommand<MouseButtonEventArgs>(TreeView_PreviewMouseRightButtonDownAsync);
-        IAsyncRelayCommand p_TreeView_PreviewMouseRightButtonDown;
+        IAsyncRelayCommand? p_TreeView_PreviewMouseRightButtonDown;
         public Task TreeView_PreviewMouseRightButtonDownAsync(MouseButtonEventArgs? e)
         {
             if (e?.OriginalSource is DependencyObject dep)
@@ -503,7 +520,7 @@ namespace Snet.Iot.Debug.viewModel
         }
 
         // 递归查找指定类型的父控件
-        private DependencyObject VisualUpwardSearch<T>(DependencyObject source)
+        private DependencyObject? VisualUpwardSearch<T>(DependencyObject source)
         {
             while (source != null && source.GetType() != typeof(T))
                 source = VisualTreeHelper.GetParent(source);
@@ -512,66 +529,78 @@ namespace Snet.Iot.Debug.viewModel
 
         // 导出当前节点及其子节点结构到 json
         public IAsyncRelayCommand ContextMenu_ExpNode => p_ContextMenu_ExpNode ??= new AsyncRelayCommand<object>(ContextMenu_ExpNodeAsync);
-        IAsyncRelayCommand p_ContextMenu_ExpNode;
+        IAsyncRelayCommand? p_ContextMenu_ExpNode;
         public async Task ContextMenu_ExpNodeAsync(object? e)
         {
             if (NodeSelectedItem == null)
             {
-                await Snet.Windows.Controls.message.MessageBox.Show(App.LanguageOperate.GetLanguageValue("请选中节点后操作"));
+                await Snet.Windows.Controls.message.MessageBox.Show(App.LanguageOperate.GetLanguageValue("请选中节点后操作") ?? "请选中节点后操作");
                 return;
             }
 
-            string path = Win32Handler.Select(App.LanguageOperate.GetLanguageValue("请选择文件夹"), true);
+            OpcUaClientOperate client = Daq ?? throw new InvalidOperationException("OPC UA client is not connected.");
+            string path = Win32Handler.Select(App.LanguageOperate.GetLanguageValue("请选择文件夹") ?? "请选择文件夹", true);
             if (string.IsNullOrEmpty(path))
             {
-                await Snet.Windows.Controls.message.MessageBox.Show(App.LanguageOperate.GetLanguageValue("取消节点导出，未选择存储路径"));
+                await Snet.Windows.Controls.message.MessageBox.Show(App.LanguageOperate.GetLanguageValue("取消节点导出，未选择存储路径") ?? "取消节点导出，未选择存储路径");
                 return;
             }
 
             var jsonRoot = await ExpNodesAsync(NodeSelectedItem);
             if (jsonRoot == null)
             {
-                await Snet.Windows.Controls.message.MessageBox.Show(App.LanguageOperate.GetLanguageValue("请把所有子节点都展开在进行导出操作"));
+                await Snet.Windows.Controls.message.MessageBox.Show(App.LanguageOperate.GetLanguageValue("请把所有子节点都展开在进行导出操作") ?? "请把所有子节点都展开在进行导出操作");
                 return;
             }
 
-            string baseName = jsonRoot.Name;
+            string baseName = SanitizeFileName(jsonRoot.Name ?? "Node");
             string timeStamp = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
 
-            string pathTree = $"{path}\\[{baseName}]Node {timeStamp}.json";
+            string pathTree = System.IO.Path.Combine(path, $"[{baseName}]Node {timeStamp}.json");
             FileHandler.StringToFile(pathTree, JsonConvert.SerializeObject(jsonRoot, Formatting.Indented));
 
-            await ecAsync(jsonRoot);
+            var exportedNodes = new List<NodeBody>();
+            CollectLeafNodes(jsonRoot, exportedNodes);
 
-            Address addressList = new()
+            Address addressList = new() { AddressArray = [] };
+            foreach (NodeBody exportedNode in exportedNodes)
             {
-                AddressArray = nodes.ConvertAll(n => new AddressDetails
+                if (Enum.TryParse(exportedNode.DataType, out BuiltInType builtInType))
                 {
-                    AddressName = n.Address,
-                    AddressDescribe = n.Description,
-                    AddressDataType = Daq.TypeConvert((BuiltInType)Enum.Parse(typeof(BuiltInType), n.DataType))
-                })
-            };
+                    addressList.AddressArray.Add(new AddressDetails
+                    {
+                        AddressName = exportedNode.Address,
+                        AddressDescribe = exportedNode.Description,
+                        AddressDataType = client.TypeConvert(builtInType)
+                    });
+                }
+            }
 
-            string pathAddress = $"{path}\\[{baseName}]Node_Address {timeStamp}.json";
+            string pathAddress = System.IO.Path.Combine(path, $"[{baseName}]Node_Address {timeStamp}.json");
             FileHandler.StringToFile(pathAddress, addressList.ToJson(true));
 
-            await Snet.Windows.Controls.message.MessageBox.Show($"{App.LanguageOperate.GetLanguageValue("节点成功导出至")}：{pathAddress}");
+            await Snet.Windows.Controls.message.MessageBox.Show($"{App.LanguageOperate.GetLanguageValue("节点成功导出至") ?? "节点成功导出至"}：{pathAddress}");
         }
 
         // 辅助递归导出子节点数据结构
-        private async Task<NodeBody> ExpNodesAsync(OpcUaNodeBrowseStructuralBody node, NodeBody nodeJson = null)
+        private async Task<NodeBody?> ExpNodesAsync(OpcUaNodeBrowseStructuralBody node, NodeBody? nodeJson = null)
         {
             if (node.NodeID is not ReferenceDescription refDesc) return null;
 
             nodeJson ??= new NodeBody();
             NodeId nodeId = (NodeId)refDesc.NodeId;
 
-            DataValue[] values = await Daq.DetailedReadAllNodeDataAsync([nodeId], browseToken.Token);
+            OpcUaClientOperate daq = Daq ?? throw new InvalidOperationException("OPC UA 连接尚未打开。");
+            CancellationToken token = browseToken?.Token ?? CancellationToken.None;
+            DataValue[] values = await daq.DetailedReadAllNodeDataAsync([nodeId], token);
+            if (values.Length < 5)
+            {
+                throw new InvalidDataException($"节点 {nodeId} 的详细数据不完整。");
+            }
 
-            nodeJson.DataType = (await Daq.GetNodeValueTypeAsync(nodeId, browseToken.Token)).GetSource<BuiltInType>().ToString();
-            nodeJson.Name = values[3].WrappedValue.AsBoxedObject()?.ToString();
-            nodeJson.Description = values[4].WrappedValue.AsBoxedObject()?.ToString();
+            nodeJson.DataType = (await daq.GetNodeValueTypeAsync(nodeId, token)).GetSource<BuiltInType>().ToString();
+            nodeJson.Name = values[3].WrappedValue.AsBoxedObject()?.ToString() ?? string.Empty;
+            nodeJson.Description = values[4].WrappedValue.AsBoxedObject()?.ToString() ?? string.Empty;
 
             if (node.Children.Count > 0)
             {
@@ -590,71 +619,77 @@ namespace Snet.Iot.Debug.viewModel
             return nodeJson;
         }
 
-        private List<NodeBody> nodes;
-        private async Task ecAsync(NodeBody node)
+        internal static void CollectLeafNodes(NodeBody node, List<NodeBody> destination)
         {
-            nodes ??= new();
-
-            if (node.Nodes != null)
+            if (node.Nodes is { Count: > 0 })
             {
                 foreach (var sub in node.Nodes)
-                    await ecAsync(sub);
+                    CollectLeafNodes(sub, destination);
             }
             else
             {
-                nodes.Add(node);
+                destination.Add(node);
             }
+        }
+
+        internal static string SanitizeFileName(string value)
+        {
+            char[] invalid = System.IO.Path.GetInvalidFileNameChars();
+            string sanitized = string.Concat(value.Select(c => invalid.Contains(c) ? '_' : c)).Trim();
+            return string.IsNullOrEmpty(sanitized) ? "Node" : sanitized;
         }
 
         // 订阅选中节点
         public IAsyncRelayCommand ContextMenu_Subscribe => p_ContextMenu_Subscribe ??= new AsyncRelayCommand<object>(ContextMenu_SubscribeAsync);
-        IAsyncRelayCommand p_ContextMenu_Subscribe;
+        IAsyncRelayCommand? p_ContextMenu_Subscribe;
         public async Task ContextMenu_SubscribeAsync(object? e)
         {
             if (NodeSelectedItem == null)
             {
-                await Snet.Windows.Controls.message.MessageBox.Show(App.LanguageOperate.GetLanguageValue("请选中节点后操作"));
+                await Snet.Windows.Controls.message.MessageBox.Show(App.LanguageOperate.GetLanguageValue("请选中节点后操作") ?? "请选中节点后操作");
                 return;
             }
 
+            OpcUaClientOperate client = Daq ?? throw new InvalidOperationException("OPC UA client is not connected.");
             var address = new Address
             {
                 AddressArray = SubscribeNodes(NodeSelectedItem).ConvertAll(a => new AddressDetails { AddressName = a })
             };
 
-            var result = await Daq.SubscribeAsync(address);
+            var result = await client.SubscribeAsync(address);
             await Snet.Windows.Controls.message.MessageBox.Show(result.ToJson(true));
         }
 
         // 取消订阅
         public IAsyncRelayCommand ContextMenu_UnSubscribe => p_ContextMenu_UnSubscribe ??= new AsyncRelayCommand<object>(ContextMenu_UnSubscribeAsync);
-        IAsyncRelayCommand p_ContextMenu_UnSubscribe;
+        IAsyncRelayCommand? p_ContextMenu_UnSubscribe;
         public async Task ContextMenu_UnSubscribeAsync(object? e)
         {
             if (NodeSelectedItem == null)
             {
-                await Snet.Windows.Controls.message.MessageBox.Show(App.LanguageOperate.GetLanguageValue("请选中节点后操作"));
+                await Snet.Windows.Controls.message.MessageBox.Show(App.LanguageOperate.GetLanguageValue("请选中节点后操作") ?? "请选中节点后操作");
                 return;
             }
 
+            OpcUaClientOperate client = Daq ?? throw new InvalidOperationException("OPC UA client is not connected.");
             var address = new Address
             {
                 AddressArray = SubscribeNodes(NodeSelectedItem)
                     .ConvertAll(a => new AddressDetails { AddressName = a })
             };
 
-            var result = await Daq.UnSubscribeAsync(address);
+            var result = await client.UnSubscribeAsync(address);
             await Snet.Windows.Controls.message.MessageBox.Show(result.ToJson(true));
         }
 
         // 获取节点中所有末端节点地址
-        private List<string> SubscribeNodes(OpcUaNodeBrowseStructuralBody node, List<string> result = null)
+        internal static List<string> SubscribeNodes(OpcUaNodeBrowseStructuralBody node, List<string>? result = null)
         {
             result ??= new();
             if (node.Children.Count == 0)
             {
                 var value = (node.NodeID as ReferenceDescription)?.NodeId.ToString();
-                if (!value.IsNullOrWhiteSpace())
+                if (!string.IsNullOrWhiteSpace(value))
                 {
                     result.Add(value);
                 }
@@ -663,7 +698,7 @@ namespace Snet.Iot.Debug.viewModel
             {
                 foreach (var child in node.Children)
                 {
-                    result.AddRange(SubscribeNodes(child));
+                    SubscribeNodes(child, result);
                 }
             }
             return result;
@@ -671,25 +706,45 @@ namespace Snet.Iot.Debug.viewModel
         #endregion
 
 
+        private int disposed;
+
         public void Dispose()
         {
-            try
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
             {
-                Daq?.Dispose();
+                return;
             }
-            catch { }
+            browseToken?.Cancel();
+            browseToken?.Dispose();
+            browseToken = null;
+            Daq?.Dispose();
+            Daq = null;
+            DisposeNodes();
+            GC.SuppressFinalize(this);
         }
 
         public async ValueTask DisposeAsync()
         {
-            try
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
             {
-                if (Daq != null)
-                {
-                    await Daq.DisposeAsync();
-                }
+                return;
             }
-            catch { }
+            await OffAsync();
+            GC.SuppressFinalize(this);
+        }
+
+        private void DisposeNodes()
+        {
+            if (Node is not null)
+            {
+                foreach (OpcUaNodeBrowseStructuralBody node in Node)
+                {
+                    node.Dispose();
+                }
+                Node.Clear();
+            }
+            NodeMessage?.Clear();
+            _cacheData.Clear();
         }
     }
 }

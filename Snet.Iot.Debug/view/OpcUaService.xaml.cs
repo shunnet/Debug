@@ -11,11 +11,29 @@ namespace Snet.Iot.Debug.view
     /// </summary>
     public partial class OpcUaService : UserControl
     {
+        private readonly List<EditHandler> editHandlers = [];
+
+        /// <summary>初始化 OPC UA 服务视图并接管编辑器扩展的生命周期。</summary>
         public OpcUaService()
         {
             InitializeComponent();
-            new EditHandler(edit1, App.EditModels, color: ("#454545", "#FEFEFE"));
-            new EditHandler(edit2, App.EditModels, color: ("#454545", "#FEFEFE"));
+            Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
+        }
+
+        /// <summary>控件进入可视树时安装编辑器扩展。</summary>
+        private void OnLoaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (editHandlers.Count != 0) return;
+            editHandlers.Add(new EditHandler(edit1, App.EditModels, color: ("#454545", "#FEFEFE")));
+            editHandlers.Add(new EditHandler(edit2, App.EditModels, color: ("#454545", "#FEFEFE")));
+        }
+
+        /// <summary>控件离开可视树时解除编辑器与静态主题事件。</summary>
+        private void OnUnloaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            foreach (EditHandler handler in editHandlers) handler.Dispose();
+            editHandlers.Clear();
         }
 
         /// <summary>

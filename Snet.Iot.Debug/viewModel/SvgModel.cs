@@ -6,7 +6,8 @@ using Snet.Windows.Core.mvvm;
 
 namespace Snet.Iot.Debug.viewModel
 {
-    public class SvgModel : BindNotify
+    /// <summary>将 SVG 片段转换为 WPF 可用代码并管理界面命令。</summary>
+    public sealed class SvgModel : BindNotify
     {
         /// <summary>
         /// 名称
@@ -58,30 +59,34 @@ namespace Snet.Iot.Debug.viewModel
         /// <summary>
         /// 信息清空
         /// </summary>
-        public IAsyncRelayCommand CodeClear => p_CodeClear ??= new AsyncRelayCommand(CodeClearAsync);
-        IAsyncRelayCommand p_CodeClear;
-        public Task CodeClearAsync()
+        public IRelayCommand CodeClear => p_CodeClear ??= new RelayCommand(CodeClearValue);
+        private IRelayCommand? p_CodeClear;
+
+        /// <summary>清空输入 SVG。</summary>
+        private void CodeClearValue()
         {
             InputData = string.Empty;
-            return Task.CompletedTask;
         }
 
         /// <summary>
         /// 信息清空
         /// </summary>
-        public IAsyncRelayCommand ResultClear => p_ResultClear ??= new AsyncRelayCommand(ResultClearAsync);
-        IAsyncRelayCommand p_ResultClear;
-        public Task ResultClearAsync()
+        public IRelayCommand ResultClear => p_ResultClear ??= new RelayCommand(ResultClearValue);
+        private IRelayCommand? p_ResultClear;
+
+        /// <summary>清空转换结果。</summary>
+        private void ResultClearValue()
         {
             OutData = string.Empty;
-            return Task.CompletedTask;
         }
 
         /// <summary>
         /// 转换
         /// </summary>
         public IAsyncRelayCommand Transition => p_Transition ??= new AsyncRelayCommand(TransitionAsync);
-        IAsyncRelayCommand p_Transition;
+        private IAsyncRelayCommand? p_Transition;
+
+        /// <summary>校验输入并执行 SVG 代码转换。</summary>
         public async Task TransitionAsync()
         {
             if (!string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(Annotation) && !string.IsNullOrEmpty(InputData))
@@ -93,12 +98,12 @@ namespace Snet.Iot.Debug.viewModel
                 }
                 else
                 {
-                    await MessageBox.Show(App.LanguageOperate.GetLanguageValue("转换失败"), App.LanguageOperate.GetLanguageValue("提示"), MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    await MessageBox.Show(App.LanguageOperate.GetLanguageValue("转换失败") ?? "转换失败", App.LanguageOperate.GetLanguageValue("提示") ?? "提示", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                 }
             }
             else
             {
-                await MessageBox.Show(App.LanguageOperate.GetLanguageValue("数据不能为空"), App.LanguageOperate.GetLanguageValue("提示"), MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                await MessageBox.Show(App.LanguageOperate.GetLanguageValue("数据不能为空") ?? "数据不能为空", App.LanguageOperate.GetLanguageValue("提示") ?? "提示", MessageBoxButton.OK, MessageBoxImage.Exclamation);
             }
         }
 
@@ -107,13 +112,14 @@ namespace Snet.Iot.Debug.viewModel
         /// <summary>
         /// 复制
         /// </summary>
-        public IAsyncRelayCommand Copy => p_Copy ??= new AsyncRelayCommand(CopyAsync);
-        IAsyncRelayCommand p_Copy;
-        public Task CopyAsync()
+        public IRelayCommand Copy => p_Copy ??= new RelayCommand(CopyValue);
+        private IRelayCommand? p_Copy;
+
+        /// <summary>把转换结果复制到剪贴板。</summary>
+        private void CopyValue()
         {
-            if (OutData == null) return Task.CompletedTask;
+            if (OutData == null) return;
             System.Windows.Clipboard.SetDataObject(OutData);
-            return Task.CompletedTask;
         }
 
 

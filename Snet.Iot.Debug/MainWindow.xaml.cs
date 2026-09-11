@@ -8,6 +8,7 @@ namespace Snet.Iot.Debug
     /// </summary>
     public partial class MainWindow : WindowBase
     {
+        /// <summary>初始化主窗口并选择默认导航项。</summary>
         public MainWindow()
         {
             InitializeComponent();

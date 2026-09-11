@@ -122,6 +122,8 @@ namespace Snet.Iot.Debug
                     Devices.RemoveAt(i);         // 从集合中移除
                 }
             }
+            SelectedDevicesItem = tab;
+            AutoCheckTabControlVisibility();
         }
 
         /// <summary>

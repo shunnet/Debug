@@ -4,8 +4,10 @@ using System.Windows.Input;
 
 namespace Snet.Iot.Debug.behaviors
 {
+    /// <summary>把 TabItem 右键点击映射为可绑定命令。</summary>
     public static class TabItemRightClickBehavior
     {
+        /// <summary>附加命令依赖属性。</summary>
         public static readonly DependencyProperty CommandProperty =
             DependencyProperty.RegisterAttached(
                 "Command",
@@ -14,18 +16,21 @@ namespace Snet.Iot.Debug.behaviors
                 new PropertyMetadata(null, OnCommandChanged));
 
 
-        public static void SetCommand(DependencyObject element, ICommand value)
+        /// <summary>设置右键命令。</summary>
+        public static void SetCommand(DependencyObject element, ICommand? value)
         {
             element.SetValue(CommandProperty, value);
         }
 
 
-        public static ICommand GetCommand(DependencyObject element)
+        /// <summary>取得右键命令；未设置时返回 <see langword="null"/>。</summary>
+        public static ICommand? GetCommand(DependencyObject element)
         {
-            return (ICommand)element.GetValue(CommandProperty);
+            return element.GetValue(CommandProperty) as ICommand;
         }
 
 
+        /// <summary>命令变化时同步事件订阅。</summary>
         private static void OnCommandChanged(
             DependencyObject d,
             DependencyPropertyChangedEventArgs e)
@@ -43,6 +48,7 @@ namespace Snet.Iot.Debug.behaviors
         }
 
 
+        /// <summary>选中右键页签并执行其命令。</summary>
         private static void TabItem_PreviewMouseRightButtonDown(
             object sender,
             MouseButtonEventArgs e)

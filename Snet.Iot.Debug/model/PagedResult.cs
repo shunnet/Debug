@@ -35,6 +35,6 @@
         /// 是否为最后一页。
         /// 如果 当前已加载的数据 >= 总数据量，则认为是最后一页。
         /// </summary>
-        public bool IsLastPage => PageIndex * PageSize + Items.Count >= TotalCount;
+        public bool IsLastPage => (long)PageIndex * PageSize + Items.Count >= TotalCount;
     }
 }

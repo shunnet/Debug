@@ -5,8 +5,10 @@ using System.Windows.Controls;
 
 namespace Snet.Iot.Debug.model
 {
-    public class TabControlDeviceModel : BindNotify
+    /// <summary>表示一个可关闭的调试页签，并拥有其内容数据上下文的生命周期。</summary>
+    public sealed class TabControlDeviceModel : BindNotify, IDisposable, IAsyncDisposable
     {
+        private int disposed;
         /// <summary>
         /// 构造函数，初始化设备详情和内容并刷新显示数据
         /// </summary>
@@ -53,13 +55,12 @@ namespace Snet.Iot.Debug.model
         /// </summary>
         public void Dispose()
         {
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
+                return;
             // 退订静态语言事件，避免关闭 Tab 后本模型被静态事件持有（泄漏）
             Core.handler.LanguageHandler.OnLanguageEvent -= LanguageHandler_OnLanguageEvent;
-            IDisposable? sisposable = Content.DataContext.GetSource<IDisposable>();
-            if (sisposable != null)
-            {
-                sisposable.Dispose();
-            }
+            (Content.DataContext as IDisposable)?.Dispose();
+            GC.SuppressFinalize(this);
         }
         /// <summary>
         /// 异步释放
@@ -67,14 +68,19 @@ namespace Snet.Iot.Debug.model
         /// <returns></returns>
         public async ValueTask DisposeAsync()
         {
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
+                return;
             // 退订静态语言事件，避免关闭 Tab 后本模型被静态事件持有（泄漏）
             Core.handler.LanguageHandler.OnLanguageEvent -= LanguageHandler_OnLanguageEvent;
-            IAsyncDisposable? asyncDisposable = Content.DataContext.GetSource<IAsyncDisposable>();
-            if (asyncDisposable != null)
+            if (Content.DataContext is IAsyncDisposable asyncDisposable)
             {
                 await asyncDisposable.DisposeAsync();
             }
-
+            else
+            {
+                (Content.DataContext as IDisposable)?.Dispose();
+            }
+            GC.SuppressFinalize(this);
         }
     }
 }
