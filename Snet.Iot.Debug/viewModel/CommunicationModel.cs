@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using Snet.Core.communication.net.tcp.client;
 using Snet.Core.communication.net.udp.broadcast;
 using Snet.Core.communication.net.udp.multicast;
@@ -206,7 +206,7 @@ namespace Snet.Iot.Debug.viewModel
                 }
                 else
                 {
-            await uiMessage_InfoEvent.ShowAsync($"“{Data}”{App.LanguageOperate.GetLanguageValue("不是有效的 Hex 数据") ?? "不是有效的 Hex 数据"}");
+                    await uiMessage_InfoEvent.ShowAsync($"“{Data}”{App.LanguageOperate.GetLanguageValue("不是有效的 Hex 数据") ?? "不是有效的 Hex 数据"}");
                     return;
                 }
             }

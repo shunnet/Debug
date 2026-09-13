@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using Snet.Core.handler;
 using Snet.Iot.Debug.handler;
-using Snet.Utility;
 using Snet.Windows.Controls.handler;
 using Snet.Windows.Core.mvvm;
 using System.Windows;
