@@ -273,7 +273,16 @@ namespace Snet.Iot.Debug.template
         /// </summary>
         public void Dispose()
         {
-            DisposeAsync().AsTask().GetAwaiter().GetResult();
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
+            {
+                return;
+            }
+            Core.handler.LanguageHandler.OnLanguageEventAsync -= LanguageHandler_OnLanguageEventAsync;
+            // 同步释放不等待可能正在 UI 线程续接的异步初始化。
+            (MqService as IDisposable)?.Dispose();
+            uiMessage_DataEvent.Dispose();
+            uiMessage_InfoEvent.Dispose();
+            GC.SuppressFinalize(this);
         }
         /// <summary>
         /// 异步释放

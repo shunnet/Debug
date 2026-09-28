@@ -311,12 +311,24 @@ namespace Snet.Iot.Debug.chart
             try
             {
                 CancellationTokenSource? refreshCancellation = AutoRefreshTokenSource;
+                Task? refreshTask = AutoRefreshTask;
                 AutoRefreshTokenSource = null;
                 AutoRefreshTask = null;
                 if (refreshCancellation != null)
                 {
                     refreshCancellation.Cancel();
-                    refreshCancellation.Dispose();
+                    if (refreshTask is null || refreshTask.IsCompleted)
+                    {
+                        refreshCancellation.Dispose();
+                    }
+                    else
+                    {
+                        _ = refreshTask.ContinueWith(
+                            _ => refreshCancellation.Dispose(),
+                            CancellationToken.None,
+                            TaskContinuationOptions.ExecuteSynchronously,
+                            TaskScheduler.Default);
+                    }
                 }
 
                 // 清理 DataLogger：调用 Clear 并释放每个 logger（如果需要）
@@ -486,14 +498,10 @@ namespace Snet.Iot.Debug.chart
 
                 if (DataLoggerChartManage.TryRemove(sn, out var data))
                 {
-                    // 先清空数据
-                    if (Clear(sn).GetDetails(out message))
-                    {
-                        // 把此线条从控件中移除（UI 线程）
-                        data.plot.Dispatcher.Invoke(() => data.plot.Plot.Remove(data.logger));
-                        return EndOperate(true);
-                    }
-                    return EndOperate(false, message);
+                    data.Clear();
+                    // 把此线条从控件中移除（UI 线程）
+                    data.plot.Dispatcher.Invoke(() => data.plot.Plot.Remove(data.logger));
+                    return EndOperate(true);
                 }
                 return EndOperate(false, $"{sn}{LanguageOperate.GetLanguageValue("不存在")}");
             }

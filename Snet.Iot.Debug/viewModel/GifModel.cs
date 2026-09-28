@@ -16,6 +16,7 @@ namespace Snet.Iot.Debug.viewModel
     {
         private CancellationTokenSource? conversionCancellation;
         private Task<bool>? conversionTask;
+        private readonly object conversionGate = new();
         private int disposed;
 
         /// <summary>
@@ -85,13 +86,33 @@ namespace Snet.Iot.Debug.viewModel
                 toGifTool.FFmpegTool = FFmpegTool;
                 toGifTool.OnResponse = msg => LogShow(msg);
 
-                using CancellationTokenSource cancellation = new();
-                conversionCancellation = cancellation;
+                CancellationTokenSource cancellation = new();
                 string outputPath = System.IO.Path.Combine(FlieStoragePath, $"{DateTime.Now:yyyyMMddHHmmss}.gif");
+                Task<bool> runningTask;
+                lock (conversionGate)
+                {
+                    ObjectDisposedException.ThrowIf(Volatile.Read(ref disposed) != 0, this);
+                    if (conversionTask is not null)
+                    {
+                        cancellation.Dispose();
+                        throw new InvalidOperationException("转换正在进行。");
+                    }
+                    conversionCancellation = cancellation;
+                    try
+                    {
+                        runningTask = toGifTool.RunConverterAsync(FliePath, outputPath, cancellation.Token);
+                    }
+                    catch
+                    {
+                        conversionCancellation = null;
+                        cancellation.Dispose();
+                        throw;
+                    }
+                    conversionTask = runningTask;
+                }
                 try
                 {
-                    conversionTask = toGifTool.RunConverterAsync(FliePath, outputPath, cancellation.Token);
-                    bool succeeded = await conversionTask;
+                    bool succeeded = await runningTask;
                     string messageKey = succeeded ? "转换成功" : "转换失败";
                     var image = succeeded
                         ? Windows.Controls.@enum.MessageBoxImage.Information
@@ -108,8 +129,15 @@ namespace Snet.Iot.Debug.viewModel
                 }
                 finally
                 {
-                    conversionTask = null;
-                    conversionCancellation = null;
+                    lock (conversionGate)
+                    {
+                        if (ReferenceEquals(conversionTask, runningTask))
+                        {
+                            conversionTask = null;
+                            conversionCancellation = null;
+                        }
+                    }
+                    cancellation.Dispose();
                 }
             }
             else
@@ -239,19 +267,32 @@ namespace Snet.Iot.Debug.viewModel
                 return;
             }
 
-            conversionCancellation?.Cancel();
-            if (conversionTask is not null)
+            CancellationTokenSource? cancellation;
+            Task<bool>? runningTask;
+            lock (conversionGate)
+            {
+                cancellation = conversionCancellation;
+                runningTask = conversionTask;
+            }
+            try
+            {
+                cancellation?.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // 转换刚好完成，由转换任务拥有并释放 CTS。
+            }
+            if (runningTask is not null)
             {
                 try
                 {
-                    await conversionTask;
+                    await runningTask;
                 }
                 catch (OperationCanceledException)
                 {
                     // 释放触发的正常取消。
                 }
             }
-            conversionCancellation?.Dispose();
             GC.SuppressFinalize(this);
         }
 

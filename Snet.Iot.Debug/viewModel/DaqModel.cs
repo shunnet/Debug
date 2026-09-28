@@ -70,7 +70,7 @@ namespace Snet.Iot.Debug.viewModel
         /// 采集对象
         /// 外部设置好传进来
         /// </summary>
-        private IDaq daq = null!;
+        private IDaq? daq;
 
         /// <summary>
         /// 标识符
@@ -285,19 +285,21 @@ namespace Snet.Iot.Debug.viewModel
         IAsyncRelayCommand? p_On;
         public async Task OnAsync()
         {
-            var result = await daq.OnAsync();
+            IDaq? activeDaq = await GetActiveDaqAsync();
+            if (activeDaq is null) return;
+            var result = await activeDaq.OnAsync();
             await uiMessage_InfoEvent.ShowAsync(result.Message ?? string.Empty);
             if (result.Status)
             {
-                daq.OnInfoEventAsync -= Daq_OnInfoEventAsync;
-                daq.OnInfoEventAsync += Daq_OnInfoEventAsync;
-                daq.OnDataEventAsync -= Daq_OnDataEventAsync;
-                daq.OnDataEventAsync += Daq_OnDataEventAsync;
+                activeDaq.OnInfoEventAsync -= Daq_OnInfoEventAsync;
+                activeDaq.OnInfoEventAsync += Daq_OnInfoEventAsync;
+                activeDaq.OnDataEventAsync -= Daq_OnDataEventAsync;
+                activeDaq.OnDataEventAsync += Daq_OnDataEventAsync;
 
-                await RegisterEventAsync();
+                await RegisterEventAsync(activeDaq);
             }
 
-            DeviceStatusFlashing = (await daq.GetStatusAsync()).Status;
+            DeviceStatusFlashing = (await activeDaq.GetStatusAsync()).Status;
             TabSelectedIndex = 1;
         }
 
@@ -308,19 +310,20 @@ namespace Snet.Iot.Debug.viewModel
         IAsyncRelayCommand? p_Off;
         public async Task OffAsync()
         {
-            if (daq == null)
+            IDaq? activeDaq = daq;
+            if (activeDaq is null)
             {
                 return;  // 未启动，无需关闭
             }
-            var result = await daq.OffAsync();
+            var result = await activeDaq.OffAsync();
             await uiMessage_InfoEvent.ShowAsync(result.Message ?? string.Empty);
             if (result.Status)
             {
-                daq.OnInfoEventAsync -= Daq_OnInfoEventAsync;
-                daq.OnDataEventAsync -= Daq_OnDataEventAsync;
+                activeDaq.OnInfoEventAsync -= Daq_OnInfoEventAsync;
+                activeDaq.OnDataEventAsync -= Daq_OnDataEventAsync;
             }
 
-            DeviceStatusFlashing = (await daq.GetStatusAsync()).Status;
+            DeviceStatusFlashing = (await activeDaq.GetStatusAsync()).Status;
             TabSelectedIndex = 1;
         }
 
@@ -331,18 +334,20 @@ namespace Snet.Iot.Debug.viewModel
         IAsyncRelayCommand? p_Read;
         public async Task ReadAsync()
         {
+            IDaq? activeDaq = await GetActiveDaqAsync();
+            if (activeDaq is null) return;
             if (Address.IsNullOrWhiteSpace())
             {
                 await uiMessage_InfoEvent.ShowAsync(App.LanguageOperate.GetLanguageValue("地址不能为空") ?? "地址不能为空");
                 return;
             }
             Address address = OrganizationAddress();
-            OperateResult result = await daq.ReadAsync(address);
+            OperateResult result = await activeDaq.ReadAsync(address);
             await uiMessage_InfoEvent.ShowAsync(result.Message ?? string.Empty);
             if (result.Status)
                 await uiMessage_InfoEvent.ShowAsync(result.ResultData.ToJson(true));
 
-            DeviceStatusFlashing = (await daq.GetStatusAsync()).Status;
+            DeviceStatusFlashing = (await activeDaq.GetStatusAsync()).Status;
             TabSelectedIndex = 1;
         }
 
@@ -353,6 +358,8 @@ namespace Snet.Iot.Debug.viewModel
         IAsyncRelayCommand? p_Write;
         public async Task WriteAsync()
         {
+            IDaq? activeDaq = await GetActiveDaqAsync();
+            if (activeDaq is null) return;
             if (Address.IsNullOrWhiteSpace())
             {
                 await uiMessage_InfoEvent.ShowAsync(App.LanguageOperate.GetLanguageValue("地址不能为空") ?? "地址不能为空");
@@ -362,9 +369,9 @@ namespace Snet.Iot.Debug.viewModel
             EncodingType encoding = (EncodingType)Enum.Parse(typeof(EncodingType), ComboBoxSelectedItem.Key);
             Model.@enum.DataType dataType = (Model.@enum.DataType)DataType;
             pairs.TryAdd(Address, new WriteModel(Data, dataType, encoding));
-            await uiMessage_InfoEvent.ShowAsync((await daq.WriteAsync(pairs)).Message ?? string.Empty);
+            await uiMessage_InfoEvent.ShowAsync((await activeDaq.WriteAsync(pairs)).Message ?? string.Empty);
 
-            DeviceStatusFlashing = (await daq.GetStatusAsync()).Status;
+            DeviceStatusFlashing = (await activeDaq.GetStatusAsync()).Status;
             TabSelectedIndex = 1;
         }
 
@@ -375,15 +382,17 @@ namespace Snet.Iot.Debug.viewModel
         IAsyncRelayCommand? p_Subscribe;
         public async Task SubscribeAsync()
         {
+            IDaq? activeDaq = await GetActiveDaqAsync();
+            if (activeDaq is null) return;
             if (Address.IsNullOrWhiteSpace())
             {
                 await uiMessage_InfoEvent.ShowAsync(App.LanguageOperate.GetLanguageValue("地址不能为空") ?? "地址不能为空");
                 return;
             }
-            OperateResult result = await daq.SubscribeAsync(OrganizationAddress());
+            OperateResult result = await activeDaq.SubscribeAsync(OrganizationAddress());
             await uiMessage_InfoEvent.ShowAsync(result.Message ?? string.Empty);
 
-            DeviceStatusFlashing = (await daq.GetStatusAsync()).Status;
+            DeviceStatusFlashing = (await activeDaq.GetStatusAsync()).Status;
             TabSelectedIndex = 2;
         }
 
@@ -394,15 +403,17 @@ namespace Snet.Iot.Debug.viewModel
         IAsyncRelayCommand? p_UnSubscribe;
         public async Task UnSubscribeAsync()
         {
+            IDaq? activeDaq = await GetActiveDaqAsync();
+            if (activeDaq is null) return;
             if (Address.IsNullOrWhiteSpace())
             {
                 await uiMessage_InfoEvent.ShowAsync(App.LanguageOperate.GetLanguageValue("地址不能为空") ?? "地址不能为空");
                 return;
             }
-            OperateResult result = await daq.UnSubscribeAsync(OrganizationAddress());
+            OperateResult result = await activeDaq.UnSubscribeAsync(OrganizationAddress());
             await uiMessage_InfoEvent.ShowAsync(result.Message ?? string.Empty);
 
-            DeviceStatusFlashing = (await daq.GetStatusAsync()).Status;
+            DeviceStatusFlashing = (await activeDaq.GetStatusAsync()).Status;
             TabSelectedIndex = 1;
         }
         #endregion
@@ -413,13 +424,23 @@ namespace Snet.Iot.Debug.viewModel
         /// 注册事件
         /// </summary>
         /// <returns></returns>
-        private async Task RegisterEventAsync()
+        private async Task<IDaq?> GetActiveDaqAsync()
+        {
+            IDaq? activeDaq = daq;
+            if (activeDaq is null)
+            {
+                await uiMessage_InfoEvent.ShowAsync(App.LanguageOperate.GetLanguageValue("请先选择驱动") ?? "请先选择驱动");
+            }
+            return activeDaq;
+        }
+
+        private async Task RegisterEventAsync(IDaq activeDaq)
         {
             if (InteractionVisibility == Visibility.Visible)
             {
-                if ((await daq.GetStatusAsync()).Status)
+                if ((await activeDaq.GetStatusAsync()).Status)
                 {
-                    BinaryCommunication? baseLog = (await daq.GetBaseObjectAsync()).GetSource<BinaryCommunication>();
+                    BinaryCommunication? baseLog = (await activeDaq.GetBaseObjectAsync()).GetSource<BinaryCommunication>();
                     if (baseLog is not null)
                     {
                         baseLog.LogNet.BeforeSaveToFile -= LogNet_BeforeSaveToFile;
@@ -523,7 +544,11 @@ namespace Snet.Iot.Debug.viewModel
         {
             if (e.Message == Core.handler.LanguageHandler.GetLanguageValue("日期已变更"))
             {
-                await RegisterEventAsync();
+                IDaq? activeDaq = daq;
+                if (activeDaq is not null)
+                {
+                    await RegisterEventAsync(activeDaq);
+                }
             }
             else
             {
