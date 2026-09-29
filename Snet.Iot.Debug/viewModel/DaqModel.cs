@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using ScottPlot.WPF;
 using Snet.AllenBradley;
 using Snet.Beckhoff;
@@ -58,7 +58,6 @@ namespace Snet.Iot.Debug.viewModel
 {
     public sealed class DaqModel : BindNotify, IDisposable, IAsyncDisposable
     {
-        private int disposed;
         #region 属性
 
         /// <summary>
@@ -76,6 +75,8 @@ namespace Snet.Iot.Debug.viewModel
         /// 标识符
         /// </summary>
         private string tag = string.Empty;
+
+        private int disposed;
 
         /// <summary>
         /// ui信息处理器

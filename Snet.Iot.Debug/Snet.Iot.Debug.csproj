@@ -21,12 +21,12 @@
 
 	<ItemGroup>
 		<PackageReference Include="ScottPlot.WPF" Version="5.1.59" />
-		<PackageReference Include="SkiaSharp.Views.WPF" Version="4.152.1" />
+		<PackageReference Include="SkiaSharp.Views.WPF" Version="4.153.0" />
 		<PackageReference Include="Snet.Windows.Controls" Version="26.271.1" />
 		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4258.31" />
 		<PackageReference Include="Snet.Mqtt" Version="26.271.1" />
 		<PackageReference Include="Snet.Opc" Version="26.271.2" />
-		<PackageReference Include="Snet.PerformanceTesting" Version="26.271.1" />
+		<PackageReference Include="Snet.PerformanceTesting" Version="26.272.1" />
 		<PackageReference Include="Snet.Cimon" Version="26.271.1" />
 		<PackageReference Include="Snet.AllenBradley" Version="26.271.1" />
 		<PackageReference Include="Snet.Beckhoff" Version="26.271.1" />
