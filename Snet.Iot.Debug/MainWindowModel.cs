@@ -26,6 +26,8 @@ namespace Snet.Iot.Debug
         /// </summary>
         public IAsyncRelayCommand NavigationView_Loaded => navigationView_Loaded ??= new AsyncRelayCommand<object>(NavigationView_LoadedAsync);
         private IAsyncRelayCommand? navigationView_Loaded;
+        // 主题切换会再次触发 Loaded，默认页只在首次成功加载时打开。
+        private bool navigationInitialized;
         private async Task NavigationView_LoadedAsync(object? sender)
         {
             if (sender is not RoutedEventArgs routedEvent || routedEvent.Source is not NavigationView view)
@@ -34,6 +36,7 @@ namespace Snet.Iot.Debug
             }
             await Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
             {
+                if (navigationInitialized) return;
                 if (App.tabDeviceModel == null)
                 {
                     var tabDevice = ControlFinder.FindControlsInLogicalTree<Snet.Iot.Debug.TabDeviceControl>(view).FirstOrDefault();
@@ -41,7 +44,11 @@ namespace Snet.Iot.Debug
                 }
                 if (App.tabDeviceModel != null)
                 {
-                    App.tabDeviceModel.AddDevice("关于", InjectionWpf.GetService<About>());
+                    if (!App.tabDeviceModel.Devices.Any(device => device.NameKey == "关于"))
+                    {
+                        App.tabDeviceModel.AddDevice("关于", InjectionWpf.GetService<About>());
+                    }
+                    navigationInitialized = true;
                 }
             }));
         }
