@@ -25,7 +25,7 @@
 		<PackageReference Include="Snet.Windows.Controls" Version="26.282.1" />
 		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4258.31" />
 		<PackageReference Include="Snet.Mqtt" Version="26.282.1" />
-		<PackageReference Include="Snet.Opc" Version="26.282.1" />
+		<PackageReference Include="Snet.Opc" Version="26.282.2" />
 		<PackageReference Include="Snet.PerformanceTesting" Version="26.282.1" />
 		<PackageReference Include="Snet.Cimon" Version="26.282.1" />
 		<PackageReference Include="Snet.AllenBradley" Version="26.282.1" />
