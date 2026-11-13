@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/.NET-10.0-blue?logo=dotnet"/>
+  <img src="https://img.shields.io/badge/.NET-11.0-blue?logo=dotnet"/>
   <img src="https://img.shields.io/badge/platform-Windows-success?logo=windows"/>
   <img src="https://img.shields.io/badge/license-MIT-green"/>
   <img src="https://img.shields.io/github/stars/shunnet/Debug?style=social"/>
