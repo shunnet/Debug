@@ -14,7 +14,7 @@
     Height="900"
     snet:ResxLocalizationProvider.DefaultAssembly="Snet.Iot.Debug"
     snet:ResxLocalizationProvider.DefaultDictionary="Language"
-    Icon="/icon.ico"
+    Icon="/Snet.Iot.Debug;component/icon.ico"
     LoadAnimationEnabled="False"
     ScrollViewer.CanContentScroll="True"
     VirtualizingPanel.IsVirtualizing="True"
@@ -22,7 +22,7 @@
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
     <Grid x:Name="mainGrid">
-        <uis:NavigationView
+        <local:MainNavigationView
             x:Name="NavigationViewControls"
             ui:ScrollViewerAssist.CornerRectangleVisibility="Collapsed"
             FooterMenuItemsSource="{Binding FooterMenuItemsSource}"
@@ -30,6 +30,7 @@
             IsPaneToggleVisible="True"
             MenuItemsSource="{Binding MenuItemsSource}"
             OpenPaneLength="260"
+            Style="{DynamicResource {x:Type uis:NavigationView}}"
             TextOptions.TextFormattingMode="Display">
             <i:Interaction.Triggers>
 
@@ -42,6 +43,6 @@
                 </i:EventTrigger>
 
             </i:Interaction.Triggers>
-        </uis:NavigationView>
+        </local:MainNavigationView>
     </Grid>
 </snet:WindowBase>

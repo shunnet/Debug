@@ -72,18 +72,21 @@ namespace Snet.Iot.Debug
             }
             if (App.tabDeviceModel != null)
             {
-                if (view.SelectedItem == null)
+                if (view.SelectedItem is not { } selectedItem)
                 {
                     return; // 选择被清空（如导航重建）时无目标项
                 }
-                if (view.SelectedItem.TargetPageTag == "关于")
+                if (selectedItem.TargetPageTag == "关于")
                 {
-                    App.tabDeviceModel.SetSelected(view.SelectedItem.TargetPageTag, InjectionWpf.GetService<About>());
+                    App.tabDeviceModel.SetSelected(selectedItem.TargetPageTag, InjectionWpf.GetService<About>());
                 }
                 else
                 {
-                    string sTag = view.SelectedItem.TargetPageTag;
-                    string? parentTag = view.SelectedItem.NavigationViewItemParent?.TargetPageTag;
+                    string sTag = selectedItem.TargetPageTag;
+                    // 换肤或收起菜单会卸载菜单项，WPF-UI 会清空其父级引用。
+                    // 直接从菜单分组查找，避免路由依赖控件的加载状态。
+                    string? parentTag = view.MenuItems.OfType<NavigationViewItem>()
+                        .FirstOrDefault(group => group.MenuItems.Contains(selectedItem))?.ContentStringFormat;
                     if (parentTag is null)
                     {
                         return;
