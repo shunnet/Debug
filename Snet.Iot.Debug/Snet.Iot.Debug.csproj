@@ -23,7 +23,7 @@
 		<PackageReference Include="ScottPlot.WPF" Version="5.1.59" />
 		<PackageReference Include="SkiaSharp.Views.WPF" Version="4.157.0" />
 		<PackageReference Include="Snet.Windows.Controls" Version="26.316.1" />
-		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4370.26" />
 		<PackageReference Include="Snet.Mqtt" Version="26.316.1" />
 		<PackageReference Include="Snet.Opc" Version="26.316.1" />
 		<PackageReference Include="Snet.PerformanceTesting" Version="26.316.1" />
